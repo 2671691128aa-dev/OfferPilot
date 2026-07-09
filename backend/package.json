@@ -5,21 +5,28 @@
   "main": "index.js",
   "scripts": {
     "start": "tsx src/server.ts",
-    "dev": "tsx watch src/server.ts"
+    "dev": "tsx watch src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.ts\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">=18"
+  },
   "type": "commonjs",
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "openai": "^6.45.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^26.1.1",
+    "globals": "^17.7.0",
     "tsx": "^4.23.0",
     "typescript": "^7.0.2"
   }

@@ -1,0 +1,30 @@
+{
+  "devDependencies": {
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
+    "prettier": "^3.9.5"
+  },
+  "scripts": {
+    "prepare": "husky",
+    "lint:fe": "cd frontend && npx eslint .",
+    "typecheck:be": "cd backend && npx tsc --noEmit",
+    "typecheck:fe": "cd frontend && npx tsc --noEmit",
+    "typecheck": "npm run typecheck:fe && npm run typecheck:be",
+    "format:fe": "cd frontend && npx prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "format:be": "cd backend && npx prettier --write \"src/**/*.ts\"",
+    "format": "prettier --write \"**/*.{ts,tsx,css,mjs,json}\" --ignore-path .prettierignore"
+  },
+  "lint-staged": {
+    "frontend/**/*.{ts,tsx}": [
+      "cd frontend && npx eslint --fix",
+      "prettier --write"
+    ],
+    "frontend/**/*.css": [
+      "prettier --write"
+    ],
+    "backend/**/*.ts": [
+      "prettier --write"
+    ]
+  }
+}

@@ -1,1 +1,192 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+@theme {
+  --color-ink: #1a1a2e;
+  --color-ink-light: #3d3d5c;
+  --color-ink-muted: #6b7280;
+  --color-surface: #faf9f7;
+  --color-surface-warm: #f5f3ef;
+  --color-card: #ffffff;
+  --color-primary: #4f46e5;
+  --color-primary-light: #818cf8;
+  --color-primary-dark: #3730a3;
+  --color-accent: #f59e0b;
+  --color-accent-light: #fbbf24;
+  --color-border: #e8e6e1;
+  --color-border-light: #f0ede8;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+}
+
+/* ─── Base ─── */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Glassmorphism ─── */
+
+.glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid rgba(232, 230, 225, 0.6);
+}
+
+/* ─── Hero gradient orbs ─── */
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.orb-1 {
+  width: 500px;
+  height: 500px;
+  background: linear-gradient(135deg, #818cf8, #6366f1);
+  top: -120px;
+  right: -80px;
+  animation: orb-float 8s ease-in-out infinite;
+}
+
+.orb-2 {
+  width: 350px;
+  height: 350px;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  bottom: -60px;
+  left: -40px;
+  animation: orb-float 10s ease-in-out infinite reverse;
+}
+
+.orb-3 {
+  width: 250px;
+  height: 250px;
+  background: linear-gradient(135deg, #818cf8, #a78bfa);
+  top: 40%;
+  left: 50%;
+  animation: orb-float 12s ease-in-out infinite;
+}
+
+@keyframes orb-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-20px) scale(1.05);
+  }
+}
+
+/* ─── Card hover lift ─── */
+
+.card-lift {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -12px rgba(26, 26, 46, 0.12);
+}
+
+/* ─── Feature card left accent ─── */
+
+.feature-accent {
+  position: relative;
+}
+.feature-accent::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 1rem;
+  bottom: 1rem;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--color-primary), var(--color-primary-light));
+}
+
+/* ─── Timeline connector ─── */
+
+.timeline-connector {
+  position: relative;
+}
+.timeline-connector::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -1.5rem;
+  width: 3rem;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-primary-light), transparent);
+}
+@media (max-width: 1023px) {
+  .timeline-connector::after {
+    display: none;
+  }
+}
+
+/* ─── Button shine effect ─── */
+
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+.btn-shine:hover::after {
+  left: 120%;
+}
+
+/* ─── Custom scrollbar ─── */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* ─── Focus ring ─── */
+
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─── Reduced motion ─── */
+
+@media (prefers-reduced-motion: reduce) {
+  .orb,
+  .card-lift,
+  .btn-shine::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
