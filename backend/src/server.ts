@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3001
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
-  'https://offer-pilot.vercel.app', // replace with your actual Vercel URL
+  'https://offer-pilot.vercel.app', // replace with your actual Vercel URL after deploy
 ]
 
 app.use(
