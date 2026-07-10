@@ -495,6 +495,7 @@ export default function Interview() {
             answer={currentInput}
             onAnswerChange={setCurrentInput}
             onSubmit={handleSubmitAnswer}
+            isSubmitting={isEvalStreaming}
           />
         </div>
       </div>
