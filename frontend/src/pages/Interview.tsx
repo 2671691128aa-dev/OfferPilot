@@ -456,10 +456,11 @@ export default function Interview() {
     if (report) {
       return (
         <div className="mx-auto max-w-3xl px-6 py-12">
-          <h1 className="text-2xl font-extrabold tracking-tight text-ink">面试报告</h1>
-          <div className="mt-6">
-            <InterviewReportCard report={report} questions={questions} onRetake={handleRetake} />
+          <div className="mb-8">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary">面试报告</p>
+            <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-ink">面试总结</h1>
           </div>
+          <InterviewReportCard report={report} questions={questions} onRetake={handleRetake} />
         </div>
       )
     }
@@ -476,17 +477,26 @@ export default function Interview() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="text-2xl font-extrabold tracking-tight text-ink">AI 模拟面试</h1>
-      <div className="mt-6">
-        <InterviewQuestionCard
-          question={question}
-          questionNumber={currentQ + 1}
-          totalQuestions={questions.length}
-          answer={currentInput}
-          onAnswerChange={setCurrentInput}
-          onSubmit={handleSubmitAnswer}
-          isSubmitting={isEvalStreaming}
-        />
+      <div className="mb-8">
+        <p className="text-xs font-semibold uppercase tracking-widest text-primary">模拟面试</p>
+        <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-ink">
+          AI 模拟面试
+          <span className="ml-3 text-base font-normal text-ink-muted">
+            第 {currentQ + 1} / {questions.length} 题
+          </span>
+        </h1>
+      </div>
+      <div className="card-hover-lift rounded-2xl border border-border/80 bg-card shadow-lg shadow-border/20">
+        <div className="p-6">
+          <InterviewQuestionCard
+            question={question}
+            questionNumber={currentQ + 1}
+            totalQuestions={questions.length}
+            answer={currentInput}
+            onAnswerChange={setCurrentInput}
+            onSubmit={handleSubmitAnswer}
+          />
+        </div>
       </div>
 
       {/* Feedback section */}
@@ -503,9 +513,43 @@ export default function Interview() {
               <InterviewFeedbackCard feedback={evalStream.data!} isStreaming={false} rawText="" />
               <button
                 onClick={handleNextQuestion}
-                className="btn-shine w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition hover:bg-primary-dark"
+                className="btn-shine inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition hover:bg-primary-dark"
               >
-                {currentQ + 1 >= questions.length ? '查看面试报告' : '下一题'}
+                {currentQ + 1 >= questions.length ? (
+                  <>
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"
+                      />
+                    </svg>
+                    查看面试报告
+                  </>
+                ) : (
+                  <>
+                    下一题
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                      />
+                    </svg>
+                  </>
+                )}
               </button>
             </div>
           )}
