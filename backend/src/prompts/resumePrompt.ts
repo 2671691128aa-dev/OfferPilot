@@ -76,12 +76,6 @@ ${
       "technology": ["技术栈数组"]
     }
   ],
-  "score": 简历整体评分(0-100的整数),
-  "dimensionScores": {
-    "contentCompleteness": 内容完整度(0-100),
-    "jobMatch": 岗位匹配度(0-100),
-    "keywordCoverage": 关键词覆盖率(0-100)
-  },
   "advice": ["针对该简历的具体优化建议数组，每条一句话"]
 }`
 

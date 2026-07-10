@@ -8,6 +8,22 @@ export interface DimensionScores {
   keywordCoverage: number
 }
 
+export interface DimensionScore {
+  score: number
+  weight: number
+  reasons: string[]
+}
+
+export interface ScoreBreakdown {
+  starCompleteness: DimensionScore
+  quantitativeMetrics: DimensionScore
+  keywordDensity: DimensionScore
+  actionVerbs: DimensionScore
+  contentCompleteness: DimensionScore
+  jobMatch: DimensionScore
+  lengthBalance: DimensionScore
+}
+
 export interface GeneratedResume {
   summary: string
   skills: string[]
@@ -18,6 +34,7 @@ export interface GeneratedResume {
   }>
   score: number
   dimensionScores: DimensionScores
+  scoreBreakdown?: ScoreBreakdown
   advice: string[]
 }
 
@@ -70,6 +87,9 @@ export const STREAM_ENDPOINTS = {
   resumeOptimize: '/api/resume/optimize/stream',
   jobAnalyze: '/api/job/analyze/stream',
   projectOptimize: '/api/project/optimize/stream',
+  careerRoadmap: '/api/career/roadmap/stream',
+  interviewEvaluate: '/api/interview/evaluate/stream',
+  interviewReport: '/api/interview/report/stream',
 } as const
 
 // ─── API Functions ───
@@ -111,4 +131,55 @@ export function optimizeProjectDescription(project: {
   role: string
 }): Promise<ProjectOptimizeResult> {
   return apiPost<ProjectOptimizeResult>('/api/project/optimize', project)
+}
+
+// ─── Interview Types ───
+
+export interface InterviewQuestion {
+  id: number
+  category: string
+  question: string
+  context: string
+  expectedTopics: string[]
+}
+
+export interface InterviewFeedback {
+  score: number
+  strengths: string[]
+  weaknesses: string[]
+  suggestedImprovement: string
+  strongExample: string
+}
+
+export interface InterviewAnswer {
+  questionId: number
+  question: string
+  category: string
+  userAnswer: string
+  feedback: InterviewFeedback | null
+}
+
+export interface InterviewReport {
+  overallScore: number
+  questionScores: Array<{ questionId: number; score: number }>
+  topStrengths: string[]
+  keyImprovements: string[]
+  practiceTopics: string[]
+  summary: string
+}
+
+// ─── Interview API ───
+
+export function fetchInterviewQuestions(
+  targetRole: string,
+  resumeData: {
+    skills: string[]
+    projects: Array<{ name: string; description: string; technology?: string; role?: string }>
+    summary?: string
+  },
+): Promise<{ questions: InterviewQuestion[] }> {
+  return apiPost<{ questions: InterviewQuestion[] }>('/api/interview/questions', {
+    targetRole,
+    resumeData,
+  })
 }

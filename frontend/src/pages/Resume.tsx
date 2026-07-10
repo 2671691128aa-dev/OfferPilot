@@ -13,6 +13,7 @@ import { STREAM_ENDPOINTS, type GeneratedResume } from '../services/api'
 import { useStream } from '../hooks/useStream'
 import ErrorState from '../components/ErrorState'
 import VersionHistory from '../components/VersionHistory'
+import CareerRoadmap from '../components/CareerRoadmap'
 
 // ─── Editable text field ───
 
@@ -344,10 +345,12 @@ export default function Resume() {
   // Done — editable resume
   const score = displayResult?.score ?? 0
   const dimensions = displayResult?.dimensionScores
+  const breakdown = displayResult?.scoreBreakdown
   const advice = displayResult?.advice ?? []
   const aiSummary = displayResult?.summary ?? ''
   const aiSkills = displayResult?.skills ?? []
   const aiProjects = displayResult?.projects ?? []
+  const [showBreakdown, setShowBreakdown] = useState(false)
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
@@ -547,6 +550,70 @@ export default function Resume() {
                   <ScoreBar label="关键词覆盖" score={dimensions.keywordCoverage} />
                 </div>
               )}
+              {breakdown && (
+                <div className="mt-4 border-t border-border pt-4">
+                  <button
+                    onClick={() => setShowBreakdown(!showBreakdown)}
+                    className="flex w-full items-center justify-between text-xs font-medium text-primary transition hover:text-primary-dark"
+                  >
+                    <span>查看评分明细</span>
+                    <svg
+                      className={`h-3.5 w-3.5 transition-transform ${showBreakdown ? 'rotate-180' : ''}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                      />
+                    </svg>
+                  </button>
+                  {showBreakdown && (
+                    <div className="mt-3 space-y-3 text-xs">
+                      {(
+                        Object.entries(breakdown) as Array<
+                          [string, { score: number; weight: number; reasons: string[] }]
+                        >
+                      ).map(([key, dim]) => {
+                        const labels: Record<string, string> = {
+                          starCompleteness: 'STAR 完整性',
+                          quantitativeMetrics: '量化指标',
+                          keywordDensity: '关键词密度',
+                          actionVerbs: '动作动词',
+                          contentCompleteness: '内容完整度',
+                          jobMatch: '岗位匹配',
+                          lengthBalance: '长度均衡',
+                        }
+                        return (
+                          <div key={key}>
+                            <div className="flex items-center justify-between">
+                              <span className="text-ink-muted">
+                                {labels[key] || key}
+                                <span className="ml-1 text-ink-muted/50">({dim.weight}%)</span>
+                              </span>
+                              <span
+                                className={`font-medium ${dim.score >= 70 ? 'text-success' : dim.score >= 40 ? 'text-accent' : 'text-error'}`}
+                              >
+                                {dim.score}
+                              </span>
+                            </div>
+                            {dim.reasons.length > 0 && (
+                              <ul className="mt-1 space-y-0.5 pl-2 text-ink-muted/70">
+                                {dim.reasons.map((r, i) => (
+                                  <li key={i}>• {r}</li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
@@ -572,7 +639,7 @@ export default function Resume() {
           </div>
         </div>
 
-        {/* Right sidebar: Version history + Save */}
+        {/* Right sidebar: Version history + Career roadmap + Save */}
         <div className="space-y-4">
           {/* Save button */}
           {editDirty && (
@@ -582,6 +649,16 @@ export default function Resume() {
             >
               保存当前版本
             </button>
+          )}
+
+          {/* Career roadmap */}
+          {displayResult && (
+            <CareerRoadmap
+              skills={data.skills}
+              projects={data.projects}
+              targetRole={data.targetRole}
+              scoreBreakdown={displayResult.scoreBreakdown}
+            />
           )}
 
           {/* Version history */}

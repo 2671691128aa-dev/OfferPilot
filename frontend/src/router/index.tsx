@@ -6,6 +6,7 @@ import Resume from '../pages/Resume'
 import Optimize from '../pages/Optimize'
 import Analyze from '../pages/Analyze'
 import Export from '../pages/Export'
+import Interview from '../pages/Interview'
 
 const router = createBrowserRouter([
   {
@@ -16,6 +17,7 @@ const router = createBrowserRouter([
       { path: '/resume', element: <Resume /> },
       { path: '/optimize', element: <Optimize /> },
       { path: '/analyze', element: <Analyze /> },
+      { path: '/interview', element: <Interview /> },
       { path: '/export', element: <Export /> },
     ],
   },

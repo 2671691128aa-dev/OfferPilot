@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express'
 import { generateResume, optimizeResume, streamAI } from '../services/aiService'
 import { buildResumePrompt } from '../prompts/resumePrompt'
 import { buildOptimizePrompt } from '../prompts/optimizePrompt'
+import { scoreResume } from '../services/scoringEngine'
 
 const router = Router()
 
@@ -25,6 +26,30 @@ router.post('/generate', async (req: Request, res: Response) => {
     })
     const result = await generateResume(system, user)
     const data = JSON.parse(result)
+
+    // Apply rule-based scoring instead of AI-generated scores
+    const resumeText = [
+      data.summary || '',
+      ...(projects || []).map(
+        (p: { name: string; description: string; technology: string; role: string }) =>
+          `${p.name} ${p.description} ${p.technology || ''} ${p.role || ''}`,
+      ),
+      ...(skills || []),
+    ].join(' ')
+
+    const scoreResult = scoreResume({
+      resumeText,
+      projects: projects || [],
+      skills: skills || [],
+      targetRole: targetRole || '',
+      summary: data.summary || '',
+      hasEmail: !!(email && email.trim()),
+      hasEducation: !!(education && education.school),
+    })
+
+    data.score = scoreResult.overallScore
+    data.dimensionScores = scoreResult.dimensionScores
+    data.scoreBreakdown = scoreResult.breakdown
 
     return res.json({ success: true, data })
   } catch (err: unknown) {
@@ -64,9 +89,34 @@ router.post('/generate/stream', async (req: Request, res: Response) => {
       res.write(`data: ${JSON.stringify({ type: 'chunk', content: chunk })}\n\n`)
     }
 
-    // Parse and validate the final JSON, then send as the done event
+    // Parse and validate the final JSON, then apply rule-based scoring
     try {
       const data = JSON.parse(fullText.trim())
+
+      // Apply rule-based scoring
+      const resumeText = [
+        data.summary || '',
+        ...(projects || []).map(
+          (p: { name: string; description: string; technology: string; role: string }) =>
+            `${p.name} ${p.description} ${p.technology || ''} ${p.role || ''}`,
+        ),
+        ...(skills || []),
+      ].join(' ')
+
+      const scoreResult = scoreResume({
+        resumeText,
+        projects: projects || [],
+        skills: skills || [],
+        targetRole: targetRole || '',
+        summary: data.summary || '',
+        hasEmail: !!(email && email.trim()),
+        hasEducation: !!(education && education.school),
+      })
+
+      data.score = scoreResult.overallScore
+      data.dimensionScores = scoreResult.dimensionScores
+      data.scoreBreakdown = scoreResult.breakdown
+
       res.write(`data: ${JSON.stringify({ type: 'done', data })}\n\n`)
     } catch {
       res.write(

@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   loadResumeData,
+  loadVersions,
   saveTemplate,
   loadTemplate,
   type ResumeFormData,
   type TemplateType,
+  type ResumeVersion,
 } from '../utils/storage'
 
 type Template = TemplateType
@@ -33,8 +35,34 @@ function esc(str: string): string {
     .replace(/'/g, '&#39;')
 }
 
-function buildPrintHTML(data: ResumeFormData, template: Template): string {
-  const { profile, education: edu, skills, projects, targetRole } = data
+/** Merge AI-generated data on top of the raw form data. */
+function mergeResumeData(
+  formData: ResumeFormData,
+  aiData: ResumeVersion['data'] | null,
+): ResumeFormData & { aiSummary?: string } {
+  if (!aiData) return formData
+
+  // Map AI projects (title-based) back onto form projects (name-based)
+  const mergedProjects = formData.projects.map((fp) => {
+    const aiProject = aiData.projects.find(
+      (ap) => ap.title === fp.name || ap.title.toLowerCase() === fp.name.toLowerCase(),
+    )
+    return {
+      ...fp,
+      description: aiProject?.description || fp.description,
+    }
+  })
+
+  return {
+    ...formData,
+    skills: aiData.skills.length > 0 ? aiData.skills : formData.skills,
+    projects: mergedProjects,
+    aiSummary: aiData.summary,
+  }
+}
+
+function buildPrintHTML(data: ResumeFormData & { aiSummary?: string }, template: Template): string {
+  const { profile, education: edu, skills, projects, targetRole, aiSummary } = data
 
   const header =
     template === 'developer'
@@ -59,6 +87,11 @@ function buildPrintHTML(data: ResumeFormData, template: Template): string {
 
   const sectionTitle = (text: string, color: string) =>
     `<h2 style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:${color};border-bottom:1px solid #e5e5e5;padding-bottom:4px;margin-top:20px">${esc(text)}</h2>`
+
+  const summarySection = aiSummary
+    ? `${sectionTitle('个人简介', template === 'developer' ? '#888' : '#2563eb')}
+       <p style="margin-top:8px;font-size:13px;color:#333;line-height:1.6">${esc(aiSummary)}</p>`
+    : ''
 
   const educationSection =
     edu?.school || edu?.degree
@@ -126,6 +159,7 @@ function buildPrintHTML(data: ResumeFormData, template: Template): string {
 </head>
 <body>
   ${header}
+  ${summarySection}
   ${educationSection}
   ${skillsSection}
   ${projectsSection}
@@ -140,8 +174,11 @@ export default function Export() {
     setSelectedTemplateRaw(tpl)
     saveTemplate(tpl)
   }
-  const data = loadResumeData()
-  const hasProfile = data.profile.name.trim() !== ''
+  const formData = loadResumeData()
+  const versions = loadVersions()
+  const latestAI = versions.length > 0 ? versions[0].data : null
+  const mergedData = mergeResumeData(formData, latestAI)
+  const hasProfile = formData.profile.name.trim() !== ''
 
   if (!hasProfile) {
     return (
@@ -174,7 +211,7 @@ export default function Export() {
   }
 
   const handleDownload = () => {
-    const html = buildPrintHTML(data, selectedTemplate)
+    const html = buildPrintHTML(mergedData, selectedTemplate)
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
       alert('无法打开打印窗口，请检查浏览器是否阻止了弹窗。')
@@ -188,10 +225,21 @@ export default function Export() {
     }, 200)
   }
 
+  const hasAIData = latestAI !== null
+
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       <h1 className="text-2xl font-bold text-gray-900">PDF 导出</h1>
       <p className="mt-2 text-sm text-gray-600">选择模板，预览简历效果，确认无误后下载 PDF。</p>
+      {!hasAIData && (
+        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          未检测到 AI 生成的简历数据，当前仅使用原始填写信息。 建议先前往{' '}
+          <Link to="/resume" className="font-medium text-amber-900 underline">
+            AI 简历预览
+          </Link>{' '}
+          生成优化后的简历。
+        </div>
+      )}
 
       {/* Template Selector */}
       <div className="mt-8">
@@ -216,12 +264,19 @@ export default function Export() {
 
       {/* Preview */}
       <div className="mt-8">
-        <h2 className="text-sm font-medium text-gray-700">简历预览</h2>
+        <h2 className="text-sm font-medium text-gray-700">
+          简历预览{' '}
+          {hasAIData && (
+            <span className="ml-2 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+              含 AI 优化
+            </span>
+          )}
+        </h2>
         <div className="mt-3 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
           {selectedTemplate === 'developer' ? (
-            <ResumePreviewDeveloper data={data} />
+            <ResumePreviewDeveloper data={mergedData} />
           ) : (
-            <ResumePreviewStudent data={data} />
+            <ResumePreviewStudent data={mergedData} />
           )}
         </div>
       </div>
@@ -244,7 +299,7 @@ export default function Export() {
 
 /* ─── Preview Components ─── */
 
-function ResumePreviewDeveloper({ data }: { data: ResumeFormData }) {
+function ResumePreviewDeveloper({ data }: { data: ResumeFormData & { aiSummary?: string } }) {
   return (
     <div
       className="bg-white p-10 font-sans text-sm text-gray-900"
@@ -261,6 +316,14 @@ function ResumePreviewDeveloper({ data }: { data: ResumeFormData }) {
           <p className="mt-1 text-xs font-medium text-gray-500">目标岗位：{data.targetRole}</p>
         )}
       </div>
+      {data.aiSummary && (
+        <div className="mt-5">
+          <h2 className="border-b border-gray-300 pb-1 text-xs font-bold uppercase tracking-wider text-gray-500">
+            个人简介
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-gray-700">{data.aiSummary}</p>
+        </div>
+      )}
       {data.skills.length > 0 && (
         <div className="mt-5">
           <h2 className="border-b border-gray-300 pb-1 text-xs font-bold uppercase tracking-wider text-gray-500">
@@ -301,7 +364,7 @@ function ResumePreviewDeveloper({ data }: { data: ResumeFormData }) {
   )
 }
 
-function ResumePreviewStudent({ data }: { data: ResumeFormData }) {
+function ResumePreviewStudent({ data }: { data: ResumeFormData & { aiSummary?: string } }) {
   return (
     <div
       className="bg-white p-10 font-sans text-sm text-gray-900"
@@ -318,6 +381,12 @@ function ResumePreviewStudent({ data }: { data: ResumeFormData }) {
           <p className="mt-2 text-xs font-medium text-blue-600">求职意向：{data.targetRole}</p>
         )}
       </div>
+      {data.aiSummary && (
+        <div className="mt-5">
+          <h2 className="text-sm font-bold text-blue-600">个人简介</h2>
+          <p className="mt-2 text-sm leading-relaxed text-gray-700">{data.aiSummary}</p>
+        </div>
+      )}
       {(data.education?.school || data.education?.major) && (
         <div className="mt-5">
           <h2 className="text-sm font-bold text-blue-600">教育背景</h2>

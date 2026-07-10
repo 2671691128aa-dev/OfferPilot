@@ -151,12 +151,7 @@ export async function* streamAI(
 // ─── Non-streaming exports (kept for backward compatibility) ───
 
 export async function generateResume(systemPrompt: string, userPrompt: string): Promise<string> {
-  return callAIWithRetry(systemPrompt, userPrompt, [
-    'summary',
-    'score',
-    'dimensionScores',
-    'advice',
-  ])
+  return callAIWithRetry(systemPrompt, userPrompt, ['summary', 'advice'])
 }
 
 export async function optimizeResume(systemPrompt: string, userPrompt: string): Promise<string> {
@@ -174,4 +169,11 @@ export async function analyzeJD(systemPrompt: string, userPrompt: string): Promi
 
 export async function optimizeProject(systemPrompt: string, userPrompt: string): Promise<string> {
   return callAIWithRetry(systemPrompt, userPrompt, ['optimizedDescription'])
+}
+
+export async function generateInterviewQuestions(
+  systemPrompt: string,
+  userPrompt: string,
+): Promise<string> {
+  return callAIWithRetry(systemPrompt, userPrompt, ['questions'])
 }

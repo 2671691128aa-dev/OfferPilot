@@ -6,6 +6,7 @@ const navLinks = [
   { path: '/create', label: 'AI简历' },
   { path: '/optimize', label: '简历优化' },
   { path: '/analyze', label: '岗位分析' },
+  { path: '/interview', label: '模拟面试' },
   { path: '/export', label: '导出' },
 ]
 
