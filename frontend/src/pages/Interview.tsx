@@ -10,9 +10,12 @@ import {
   type InterviewReport,
 } from '../services/api'
 import { useStream } from '../hooks/useStream'
+import { useProgressiveJSON } from '../hooks/useProgressiveJSON'
 import InterviewQuestionCard from '../components/InterviewQuestion'
-import InterviewFeedbackCard from '../components/InterviewFeedback'
+import InterviewFeedbackCard, { InterviewFeedbackStreaming } from '../components/InterviewFeedback'
 import InterviewReportCard from '../components/InterviewReport'
+import StreamProgress from '../components/StreamProgress'
+import CountUpNumber from '../components/CountUpNumber'
 
 type InterviewPhase = 'setup' | 'loading' | 'questioning' | 'report' | 'error'
 
@@ -32,6 +35,26 @@ export default function Interview() {
   // Streams
   const evalStream = useStream<InterviewFeedback>(STREAM_ENDPOINTS.interviewEvaluate)
   const reportStream = useStream<InterviewReport>(STREAM_ENDPOINTS.interviewReport)
+
+  // Report progressive streaming
+  const reportSteps = [
+    { key: 'overallScore', label: '综合评分' },
+    { key: 'topStrengths', label: '核心优势' },
+    { key: 'keyImprovements', label: '改进方向' },
+    { key: 'practiceTopics', label: '练习话题' },
+    { key: 'summary', label: '总结' },
+  ]
+  const reportProgressive = useProgressiveJSON<InterviewReport>(
+    reportStream.rawText,
+    {
+      overallScore: 'number',
+      topStrengths: 'array',
+      keyImprovements: 'array',
+      practiceTopics: 'array',
+      summary: 'string',
+    },
+    reportStream.status,
+  )
 
   const handleStart = useCallback(async () => {
     if (!targetRole.trim()) {
@@ -294,18 +317,116 @@ export default function Interview() {
       return (
         <div className="mx-auto max-w-3xl px-6 py-12">
           <h1 className="text-2xl font-extrabold tracking-tight text-ink">面试报告</h1>
-          <div className="mt-6 rounded-2xl border border-primary/20 bg-card p-6 shadow-sm">
-            <div className="mb-3 flex items-center gap-2">
-              <div className="flex h-3 w-3">
-                <span className="absolute inline-flex h-3 w-3 animate-ping rounded-full bg-primary opacity-75" />
-                <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
+
+          <div className="mt-6">
+            <StreamProgress
+              steps={reportSteps}
+              completedKeys={reportProgressive.completedKeys as string[]}
+              currentKey={reportProgressive.currentKey}
+              progress={reportProgressive.progress}
+            />
+          </div>
+
+          <div className="space-y-6">
+            {/* Overall score */}
+            {reportProgressive.fields.overallScore?.value != null && (
+              <div className="animate-fade-up rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-primary to-primary-light text-3xl font-extrabold text-white shadow-lg">
+                  <CountUpNumber value={reportProgressive.fields.overallScore.value} />
+                </div>
+                <h2 className="mt-4 text-xl font-bold text-ink">
+                  {reportProgressive.fields.overallScore.value >= 90
+                    ? '优秀'
+                    : reportProgressive.fields.overallScore.value >= 75
+                      ? '良好'
+                      : reportProgressive.fields.overallScore.value >= 60
+                        ? '一般'
+                        : '待改进'}
+                </h2>
               </div>
-              <span className="text-sm font-medium text-ink">AI 正在生成面试报告...</span>
+            )}
+
+            {/* Strengths & Improvements */}
+            <div className="grid gap-6 sm:grid-cols-2">
+              {reportProgressive.fields.topStrengths?.value &&
+                reportProgressive.fields.topStrengths.value.length > 0 && (
+                  <div className="animate-fade-up rounded-2xl border border-border bg-card p-6 shadow-sm">
+                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-success">
+                      核心优势
+                    </h3>
+                    <ul className="space-y-2">
+                      {reportProgressive.fields.topStrengths.value.map((s, i) => (
+                        <li
+                          key={i}
+                          className="animate-fade-up flex gap-2 text-sm text-ink-light"
+                          style={{ animationDelay: `${i * 80}ms` }}
+                        >
+                          <span className="mt-0.5 shrink-0 text-success">✓</span> {s}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              {reportProgressive.fields.keyImprovements?.value &&
+                reportProgressive.fields.keyImprovements.value.length > 0 && (
+                  <div className="animate-fade-up rounded-2xl border border-border bg-card p-6 shadow-sm">
+                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-error">
+                      改进方向
+                    </h3>
+                    <ul className="space-y-2">
+                      {reportProgressive.fields.keyImprovements.value.map((item, i) => (
+                        <li
+                          key={i}
+                          className="animate-fade-up flex gap-2 text-sm text-ink-light"
+                          style={{ animationDelay: `${i * 80}ms` }}
+                        >
+                          <span className="mt-0.5 shrink-0 text-error">→</span> {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
             </div>
-            <div className="max-h-60 overflow-y-auto rounded-lg bg-ink/[0.03] p-4 font-mono text-xs leading-relaxed text-ink-muted whitespace-pre-wrap">
-              {reportStream.rawText || '连接中...'}
-              <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-primary" />
-            </div>
+
+            {/* Practice topics */}
+            {reportProgressive.fields.practiceTopics?.value &&
+              reportProgressive.fields.practiceTopics.value.length > 0 && (
+                <div className="animate-fade-up rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-muted">
+                    推荐练习话题
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {reportProgressive.fields.practiceTopics.value.map((topic, i) => (
+                      <span
+                        key={i}
+                        className="rounded-full bg-primary/8 px-3 py-1.5 text-sm font-medium text-primary"
+                      >
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            {/* Summary */}
+            {reportProgressive.fields.summary?.value && (
+              <div className="animate-fade-up rounded-2xl border border-border bg-card p-6 shadow-sm">
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-muted">
+                  面试总结
+                </h3>
+                <p className="text-sm leading-relaxed text-ink-light">
+                  {reportProgressive.fields.summary.value}
+                </p>
+              </div>
+            )}
+
+            {/* Skeleton */}
+            {reportProgressive.fields.overallScore?.value == null && (
+              <div className="animate-pulse rounded-2xl border border-border bg-card p-8 text-center">
+                <div className="mx-auto h-20 w-20 rounded-3xl bg-border/40" />
+                <div className="mx-auto mt-4 h-4 w-24 rounded bg-border/40" />
+              </div>
+            )}
           </div>
         </div>
       )
@@ -366,10 +487,9 @@ export default function Interview() {
       {showFeedback && (
         <div className="mt-6">
           {isEvalStreaming && (
-            <InterviewFeedbackCard
-              feedback={evalStream.data!}
-              isStreaming={true}
+            <InterviewFeedbackStreaming
               rawText={evalStream.rawText}
+              streamStatus={evalStream.status}
             />
           )}
           {hasFeedback && (

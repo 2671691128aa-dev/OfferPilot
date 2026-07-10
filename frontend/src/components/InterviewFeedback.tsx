@@ -1,4 +1,7 @@
 import type { InterviewFeedback } from '../services/api'
+import type { StreamStatus } from '../hooks/useStream'
+import { useProgressiveJSON } from '../hooks/useProgressiveJSON'
+import CountUpNumber from './CountUpNumber'
 
 interface InterviewFeedbackCardProps {
   feedback: InterviewFeedback
@@ -106,6 +109,122 @@ export default function InterviewFeedbackCard({
             <p className="text-sm leading-relaxed text-ink-light">{feedback.strongExample}</p>
           </div>
         </details>
+      )}
+    </div>
+  )
+}
+
+// ─── Streaming variant ───
+
+interface InterviewFeedbackStreamingProps {
+  rawText: string
+  streamStatus: StreamStatus
+}
+
+export function InterviewFeedbackStreaming({
+  rawText,
+  streamStatus,
+}: InterviewFeedbackStreamingProps) {
+  const progressive = useProgressiveJSON<{
+    score: number
+    strengths: string[]
+    weaknesses: string[]
+    suggestedImprovement: string
+    strongExample: string
+  }>(
+    rawText,
+    {
+      score: 'number',
+      strengths: 'array',
+      weaknesses: 'array',
+      suggestedImprovement: 'string',
+      strongExample: 'string',
+    },
+    streamStatus,
+  )
+
+  const score = progressive.fields.score?.value
+  const scoreColor =
+    score != null
+      ? score >= 80
+        ? 'bg-success/10 text-success'
+        : score >= 60
+          ? 'bg-accent/10 text-accent'
+          : 'bg-error/10 text-error'
+      : 'bg-border/40 text-ink-muted'
+
+  return (
+    <div className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-sm">
+      {/* Score */}
+      {score != null && (
+        <div className="animate-fade-up flex items-center gap-3">
+          <div
+            className={`flex h-14 w-14 items-center justify-center rounded-2xl text-xl font-extrabold ${scoreColor}`}
+          >
+            <CountUpNumber value={score} />
+          </div>
+          <div>
+            <p className="text-base font-bold text-ink">
+              {score >= 90 ? '优秀' : score >= 75 ? '良好' : score >= 60 ? '一般' : '待改进'}
+            </p>
+            <p className="text-xs text-ink-muted">回答评分</p>
+          </div>
+        </div>
+      )}
+
+      {/* Strengths & Weaknesses */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {progressive.fields.strengths?.value && progressive.fields.strengths.value.length > 0 && (
+          <div className="animate-fade-up">
+            <h4 className="mb-2 text-xs font-medium text-success">✓ 优势</h4>
+            <ul className="space-y-1">
+              {progressive.fields.strengths.value.map((s, i) => (
+                <li
+                  key={i}
+                  className="animate-fade-up flex gap-1.5 text-sm text-ink-light"
+                  style={{ animationDelay: `${i * 60}ms` }}
+                >
+                  <span className="mt-0.5 shrink-0 text-success">•</span> {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {progressive.fields.weaknesses?.value && progressive.fields.weaknesses.value.length > 0 && (
+          <div className="animate-fade-up">
+            <h4 className="mb-2 text-xs font-medium text-error">✗ 不足</h4>
+            <ul className="space-y-1">
+              {progressive.fields.weaknesses.value.map((w, i) => (
+                <li
+                  key={i}
+                  className="animate-fade-up flex gap-1.5 text-sm text-ink-light"
+                  style={{ animationDelay: `${i * 60}ms` }}
+                >
+                  <span className="mt-0.5 shrink-0 text-error">•</span> {w}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {/* Suggested improvement */}
+      {progressive.fields.suggestedImprovement?.value && (
+        <div className="animate-fade-up rounded-lg border border-primary/15 bg-primary/[0.03] p-3">
+          <h4 className="mb-1 text-xs font-medium text-primary">改进建议</h4>
+          <p className="text-sm text-ink-light">{progressive.fields.suggestedImprovement.value}</p>
+        </div>
+      )}
+
+      {/* Skeleton */}
+      {score == null && (
+        <div className="flex animate-pulse items-center gap-3">
+          <div className="h-14 w-14 rounded-2xl bg-border/40" />
+          <div className="space-y-1.5">
+            <div className="h-3 w-16 rounded bg-border/40" />
+            <div className="h-2 w-24 rounded bg-border/30" />
+          </div>
+        </div>
       )}
     </div>
   )

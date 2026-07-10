@@ -6,9 +6,9 @@ interface ErrorStateProps {
 export default function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-24">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-error/10">
         <svg
-          className="h-8 w-8 text-red-500"
+          className="h-8 w-8 text-error"
           fill="none"
           viewBox="0 0 24 24"
           strokeWidth={1.5}
@@ -21,11 +21,11 @@ export default function ErrorState({ message, onRetry }: ErrorStateProps) {
           />
         </svg>
       </div>
-      <p className="mt-6 text-lg font-medium text-gray-900">AI 服务异常</p>
-      <p className="mt-1 text-sm text-gray-500">{message}</p>
+      <p className="mt-6 text-lg font-medium text-ink">AI 服务异常</p>
+      <p className="mt-1 text-sm text-ink-muted">{message}</p>
       <button
         onClick={onRetry}
-        className="mt-6 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
+        className="mt-6 rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-dark"
       >
         重试
       </button>

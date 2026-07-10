@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useStream } from '../hooks/useStream'
+import { useProgressiveJSON } from '../hooks/useProgressiveJSON'
 import { STREAM_ENDPOINTS, type ScoreBreakdown } from '../services/api'
+import StreamProgress from './StreamProgress'
 
 interface CareerRoadmapData {
   currentLevel: string
@@ -25,6 +27,13 @@ const priorityColor: Record<string, string> = {
   低: 'bg-success/10 text-success',
 }
 
+const streamSteps = [
+  { key: 'currentLevel', label: '等级评估' },
+  { key: 'skillGaps', label: '技能缺口' },
+  { key: 'shortTermPlan', label: '行动计划' },
+  { key: 'recommendedResources', label: '推荐资源' },
+]
+
 export default function CareerRoadmap({
   skills,
   projects,
@@ -39,6 +48,20 @@ export default function CareerRoadmap({
     start,
     abort,
   } = useStream<CareerRoadmapData>(STREAM_ENDPOINTS.careerRoadmap)
+
+  const progressive = useProgressiveJSON<CareerRoadmapData>(
+    rawText,
+    {
+      currentLevel: 'string',
+      levelAnalysis: 'string',
+      skillGaps: 'array',
+      projectSuggestions: 'array',
+      shortTermPlan: 'array',
+      midTermPlan: 'array',
+      recommendedResources: 'array',
+    },
+    status,
+  )
 
   const [dismissed, setDismissed] = useState(false)
 
@@ -60,9 +83,83 @@ export default function CareerRoadmap({
             取消
           </button>
         </div>
-        <div className="max-h-48 overflow-y-auto rounded-lg bg-ink/[0.03] p-3 font-mono text-xs leading-relaxed text-ink-muted whitespace-pre-wrap">
-          {rawText || '连接中...'}
-          <span className="ml-0.5 inline-block h-3 w-1 animate-pulse bg-primary" />
+
+        <StreamProgress
+          steps={streamSteps}
+          completedKeys={progressive.completedKeys as string[]}
+          currentKey={progressive.currentKey}
+          progress={progressive.progress}
+        />
+
+        <div className="space-y-3">
+          {/* Level badge */}
+          {progressive.fields.currentLevel?.value && (
+            <div className="animate-fade-up flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-light text-lg font-bold text-white shadow-md">
+                {progressive.fields.currentLevel.value[0]}
+              </div>
+              <div>
+                <p className="text-sm font-bold text-ink">
+                  {progressive.fields.currentLevel.value}开发者
+                </p>
+                {progressive.fields.levelAnalysis?.value && (
+                  <p className="text-xs text-ink-muted">{progressive.fields.levelAnalysis.value}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Skill gaps */}
+          {progressive.fields.skillGaps?.value && progressive.fields.skillGaps.value.length > 0 && (
+            <div className="animate-fade-up">
+              <h4 className="mb-2 text-xs font-medium text-ink-muted">技能缺口</h4>
+              <div className="space-y-1.5">
+                {progressive.fields.skillGaps.value.map((gap, i) => (
+                  <div
+                    key={i}
+                    className="animate-fade-up flex items-start gap-2 text-xs"
+                    style={{ animationDelay: `${i * 80}ms` }}
+                  >
+                    <span
+                      className={`mt-0.5 shrink-0 rounded-full px-1.5 py-0.5 font-medium ${priorityColor[gap.priority] || 'bg-border text-ink-muted'}`}
+                    >
+                      {gap.priority}
+                    </span>
+                    <div>
+                      <span className="font-medium text-ink">{gap.skill}</span>
+                      <span className="text-ink-muted"> — {gap.reason}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Short term plan */}
+          {progressive.fields.shortTermPlan?.value &&
+            progressive.fields.shortTermPlan.value.length > 0 && (
+              <div className="animate-fade-up">
+                <h4 className="mb-1 text-xs font-medium text-ink-muted">短期计划（1-2周）</h4>
+                <ul className="space-y-0.5">
+                  {progressive.fields.shortTermPlan.value.map((item, i) => (
+                    <li key={i} className="flex gap-1.5 text-xs text-ink-light">
+                      <span className="text-success">→</span> {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+          {/* Skeleton */}
+          {!progressive.fields.currentLevel?.value && !progressive.isComplete && (
+            <div className="flex animate-pulse items-center gap-3">
+              <div className="h-12 w-12 rounded-xl bg-border/40" />
+              <div className="space-y-1.5">
+                <div className="h-3 w-20 rounded bg-border/40" />
+                <div className="h-2 w-32 rounded bg-border/30" />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     )
