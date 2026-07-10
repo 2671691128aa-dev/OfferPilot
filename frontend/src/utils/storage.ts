@@ -1,3 +1,56 @@
+// ─── 通用安全 LocalStorage 工具类 ───
+
+/** 存储 Key 常量 */
+export const STORAGE_KEYS = {
+  /** 表单草稿（防抖持久化） */
+  FORM_DRAFT: 'offerpilot_form_draft',
+} as const
+
+/**
+ * 安全读取 localStorage 数据
+ * 使用 try-catch 处理 JSON.parse 异常，防止用户手动篡改 localStorage 导致页面崩溃
+ *
+ * @param key - 存储键名
+ * @returns 解析后的数据，解析失败或不存在时返回 null
+ */
+export function getStorageItem<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key)
+    if (raw === null) return null
+    return JSON.parse(raw) as T
+  } catch {
+    console.warn(`[storage] 读取 key="${key}" 失败，数据可能已损坏，已忽略`)
+    return null
+  }
+}
+
+/**
+ * 安全写入 localStorage 数据
+ *
+ * @param key - 存储键名
+ * @param value - 要存储的值（会被 JSON.stringify 序列化）
+ */
+export function setStorageItem<T>(key: string, value: T): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    console.warn(`[storage] 写入 key="${key}" 失败，可能是存储空间已满`)
+  }
+}
+
+/**
+ * 安全删除 localStorage 中的指定 key
+ *
+ * @param key - 存储键名
+ */
+export function removeStorageItem(key: string): void {
+  try {
+    localStorage.removeItem(key)
+  } catch {
+    console.warn(`[storage] 删除 key="${key}" 失败`)
+  }
+}
+
 export interface UserProfile {
   name: string
   email: string
