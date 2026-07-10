@@ -5,18 +5,15 @@ import Footer from './Footer'
 /**
  * 全局应用布局组件
  *
- * 统一页面容器：最大宽度 6xl，居中，底部留白
- * 所有子页面通过 <Outlet /> 渲染，不再需要各自设置外层容器
+ * 不再统一包裹容器，让每个页面自行控制宽度和间距。
+ * Navbar 和 Footer 保持全宽，子页面各自定义 max-w 和 padding。
  */
 export default function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-surface">
       <Navbar />
-      {/* 统一页面容器 — 所有子页面共享 */}
       <main className="flex-1">
-        <div className="mx-auto w-full max-w-6xl px-6 py-10 sm:px-8">
-          <Outlet />
-        </div>
+        <Outlet />
       </main>
       <Footer />
     </div>
