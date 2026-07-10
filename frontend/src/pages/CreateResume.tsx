@@ -205,7 +205,7 @@ export default function CreateResume() {
             </div>
 
             {/* 表单卡片 */}
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
+            <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-lg shadow-border/20 sm:p-8">
               {/* ─── Step 1: 基本信息 ─── */}
               {step === 1 && (
                 <div className="space-y-5">

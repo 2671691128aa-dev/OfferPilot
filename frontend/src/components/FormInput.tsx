@@ -6,6 +6,7 @@ interface FormInputProps {
   placeholder?: string
   type?: string
   required?: boolean
+  error?: string
 }
 
 export default function FormInput({
@@ -16,6 +17,7 @@ export default function FormInput({
   placeholder,
   type = 'text',
   required = false,
+  error,
 }: FormInputProps) {
   return (
     <div>
@@ -31,8 +33,13 @@ export default function FormInput({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
-        className="mt-1.5 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-ink placeholder:text-ink-muted/50 transition focus:border-primary focus:ring-2 focus:ring-primary/15 focus:outline-none"
+        className={`mt-1.5 w-full rounded-xl border bg-card px-4 py-3 text-sm text-ink placeholder:text-ink-muted/40 transition-all duration-200 focus:outline-none focus:ring-2 ${
+          error
+            ? 'border-red-400 focus:border-red-500 focus:ring-red-500/15'
+            : 'border-border focus:border-primary focus:ring-primary/15'
+        }`}
       />
+      {error && <p className="mt-1.5 text-xs text-error">{error}</p>}
     </div>
   )
 }
