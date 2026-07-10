@@ -10,6 +10,10 @@ const navLinks = [
   { path: '/export', label: '导出' },
 ]
 
+/**
+ * 全局导航栏组件
+ * 毛玻璃效果 + 滚动隐藏 + 移动端响应式菜单
+ */
 export default function Navbar() {
   const { pathname } = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -19,7 +23,6 @@ export default function Navbar() {
   useEffect(() => {
     const onScroll = () => {
       const current = window.scrollY
-      // Only hide after scrolling past the nav height, and on downward scroll
       if (current > 80 && current > lastScroll.current) {
         setHidden(true)
       } else {
@@ -32,7 +35,6 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Reset hidden state on route change
   useEffect(() => {
     setHidden(false)
     setMobileOpen(false)
@@ -44,10 +46,10 @@ export default function Navbar() {
         hidden ? '-translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 sm:px-8">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+        <Link to="/" className="flex items-center gap-2.5" onClick={() => setMobileOpen(false)}>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-light shadow-md shadow-primary/20">
             <svg
               className="h-4 w-4 text-white"
               fill="none"
@@ -62,20 +64,20 @@ export default function Navbar() {
               />
             </svg>
           </div>
-          <span className="text-lg font-bold tracking-tight text-ink">OfferPilot</span>
+          <span className="text-base font-extrabold tracking-tight text-ink">OfferPilot</span>
         </Link>
 
         {/* Desktop links */}
-        <div className="hidden items-center gap-1 md:flex">
+        <div className="hidden items-center gap-0.5 md:flex">
           {navLinks.map((link) => {
             const isActive = pathname === link.path
             return (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
+                className={`rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? 'bg-primary/10 text-primary'
+                    ? 'bg-primary/10 font-semibold text-primary'
                     : 'text-ink-muted hover:bg-black/5 hover:text-ink'
                 }`}
               >
@@ -89,13 +91,26 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           <Link
             to="/create"
-            className="btn-shine hidden rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-dark sm:inline-block"
+            className="btn-shine hidden rounded-lg bg-gradient-to-r from-primary to-primary-light px-4 py-2 text-sm font-semibold text-white shadow-md shadow-primary/15 transition hover:shadow-lg hover:shadow-primary/25 sm:inline-flex"
           >
+            <svg
+              className="mr-1.5 h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"
+              />
+            </svg>
             开始生成
           </Link>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-muted hover:bg-black/5 md:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-muted transition hover:bg-black/5 hover:text-ink md:hidden"
             aria-label="Toggle menu"
           >
             {mobileOpen ? (
@@ -129,7 +144,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="border-t border-border-light bg-white/95 px-6 py-4 backdrop-blur-md md:hidden">
+        <div className="border-t border-border/60 bg-white/95 px-6 py-4 backdrop-blur-md md:hidden">
           <div className="flex flex-col gap-1">
             {navLinks.map((link) => {
               const isActive = pathname === link.path
@@ -140,7 +155,7 @@ export default function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className={`rounded-lg px-4 py-2.5 text-sm font-medium transition ${
                     isActive
-                      ? 'bg-primary/10 text-primary'
+                      ? 'bg-primary/10 font-semibold text-primary'
                       : 'text-ink-muted hover:bg-black/5 hover:text-ink'
                   }`}
                 >
@@ -151,7 +166,7 @@ export default function Navbar() {
             <Link
               to="/create"
               onClick={() => setMobileOpen(false)}
-              className="mt-2 rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-semibold text-white"
+              className="btn-shine mt-2 rounded-lg bg-gradient-to-r from-primary to-primary-light px-4 py-2.5 text-center text-sm font-semibold text-white shadow-md"
             >
               开始生成
             </Link>
