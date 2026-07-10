@@ -139,7 +139,7 @@ function keyHasStarted(rawText: string, key: string, afterPos: number): boolean 
   return rawText.indexOf(pattern, Math.max(0, afterPos)) !== -1
 }
 
-export function useProgressiveJSON<T extends Record<string, unknown>>(
+export function useProgressiveJSON<T extends object>(
   rawText: string,
   schema: Record<string, FieldType>,
   streamStatus: StreamStatus,

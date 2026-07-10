@@ -8,8 +8,8 @@ import { z } from 'zod'
 /** 单个项目经历校验 */
 export const projectItemSchema = z.object({
   name: z.string().min(1, '项目名称不能为空'),
-  description: z.string().optional().default(''),
-  technology: z.string().optional().default(''),
+  description: z.string(),
+  technology: z.string(),
 })
 
 /** 完整表单校验 */
@@ -17,19 +17,19 @@ export const resumeFormSchema = z.object({
   profile: z.object({
     name: z.string().min(1, '请输入姓名'),
     email: z.string().min(1, '请输入邮箱').email('请输入有效的邮箱地址'),
-    location: z.string().optional().default(''),
+    location: z.string(),
   }),
   education: z.object({
     school: z.string().min(1, '请输入学校名称'),
-    major: z.string().optional().default(''),
-    degree: z.string().optional().default(''),
-    startDate: z.string().optional().default(''),
-    endDate: z.string().optional().default(''),
+    major: z.string(),
+    degree: z.string(),
+    startDate: z.string(),
+    endDate: z.string(),
   }),
   skills: z.array(z.string()),
   projects: z.array(projectItemSchema),
   targetRole: z.string().min(1, '请选择或输入目标岗位'),
 })
 
-/** 表单数据推断类型（与 IResumeFormData 保持一致） */
+/** 表单数据推断类型 */
 export type ResumeFormValues = z.infer<typeof resumeFormSchema>

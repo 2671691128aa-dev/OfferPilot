@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import type { FieldValues, UseFormSetValue } from 'react-hook-form'
+import type { FieldValues, UseFormSetValue, Path } from 'react-hook-form'
 import { useDebounce } from './useDebounce'
 import { getStorageItem, setStorageItem } from '../utils/storage'
 
@@ -31,13 +31,15 @@ export function useFormPersist<T extends FieldValues>(
   useEffect(() => {
     if (hasHydrated.current) return
 
-    const saved = getStorageItem<T>(storageKey)
+    const saved = getStorageItem<Record<string, unknown>>(storageKey)
     if (saved) {
       // 逐字段回填，避免覆盖默认值中不存在的字段
-      const keys = Object.keys(saved) as Array<keyof T>
-      for (const key of keys) {
-        if (saved[key] !== undefined) {
-          setValue(key, saved[key], { shouldDirty: false, shouldTouch: false })
+      for (const [key, value] of Object.entries(saved)) {
+        if (value !== undefined) {
+          setValue(key as Path<T>, value as T[Path<T>], {
+            shouldDirty: false,
+            shouldTouch: false,
+          })
         }
       }
     }
