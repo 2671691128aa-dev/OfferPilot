@@ -84,7 +84,7 @@ export default function Interview() {
     })
   }, [currentInput, currentQ, questions, targetRole, evalStream])
 
-  // When eval stream finishes, save feedback and wait for "next" click
+  // When eval stream finishes, save feedback and move to next question
   const handleNextQuestion = useCallback(() => {
     // Save feedback from eval stream
     if (evalStream.data) {
@@ -99,6 +99,9 @@ export default function Interview() {
         return updated
       })
     }
+
+    // Reset eval stream so previous feedback doesn't linger
+    evalStream.reset()
 
     const nextQ = currentQ + 1
     if (nextQ >= questions.length) {

@@ -9,6 +9,7 @@ export interface UseStreamResult<T> {
   errorMsg: string
   start: (body: unknown) => void
   abort: () => void
+  reset: () => void
 }
 
 /**
@@ -27,6 +28,17 @@ export function useStream<T>(url: string): UseStreamResult<T> {
       abortRef.current.abort()
       abortRef.current = null
     }
+  }, [])
+
+  const reset = useCallback(() => {
+    if (abortRef.current) {
+      abortRef.current.abort()
+      abortRef.current = null
+    }
+    setStatus('idle')
+    setData(null)
+    setRawText('')
+    setErrorMsg('')
   }, [])
 
   const start = useCallback(
@@ -137,5 +149,5 @@ export function useStream<T>(url: string): UseStreamResult<T> {
     [url],
   )
 
-  return { status, data, rawText, errorMsg, start, abort }
+  return { status, data, rawText, errorMsg, start, abort, reset }
 }
