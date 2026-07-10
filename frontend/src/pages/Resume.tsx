@@ -181,6 +181,7 @@ export default function Resume() {
   const [activeVersionId, setActiveVersionId] = useState<string | null>(null)
   const [editDirty, setEditDirty] = useState(false)
   const [saveFlash, setSaveFlash] = useState(false)
+  const [showBreakdown, setShowBreakdown] = useState(false)
 
   // Current displayed result
   const displayResult = editedResult ?? aiResult
@@ -350,7 +351,6 @@ export default function Resume() {
   const aiSummary = displayResult?.summary ?? ''
   const aiSkills = displayResult?.skills ?? []
   const aiProjects = displayResult?.projects ?? []
-  const [showBreakdown, setShowBreakdown] = useState(false)
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
