@@ -66,20 +66,24 @@ export default function Analyze() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
-      <h1 className="text-2xl font-extrabold tracking-tight text-ink">JD 岗位分析</h1>
-      <p className="mt-2 text-sm text-ink-muted">
-        粘贴企业招聘描述，AI 将分析岗位要求、评估匹配度，并指出你的能力差距。
-      </p>
+      {/* 页眉 */}
+      <div className="mb-8">
+        <p className="text-xs font-semibold uppercase tracking-widest text-primary">岗位分析</p>
+        <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-ink">JD 岗位分析</h1>
+        <p className="mt-2 text-ink-muted">
+          粘贴企业招聘描述，AI 将分析岗位要求、评估匹配度，并指出你的能力差距。
+        </p>
+      </div>
 
       {currentView === 'input' && (
-        <div className="mt-8">
-          <label className="block text-sm font-medium text-ink-light">岗位描述（JD）</label>
+        <div className="mt-8 rounded-2xl border border-border bg-card p-6 shadow-lg shadow-border/20 sm:p-8">
+          <label className="block text-sm font-semibold text-ink">岗位描述（JD）</label>
           <textarea
             value={jdText}
             onChange={(e) => setJdText(e.target.value)}
             rows={16}
             placeholder="粘贴招聘岗位要求到这里..."
-            className="mt-2 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-ink placeholder:text-ink-muted/50 transition focus:border-primary focus:ring-2 focus:ring-primary/15 focus:outline-none"
+            className="mt-2 w-full rounded-xl border border-border bg-surface-warm/30 px-4 py-3 text-sm text-ink placeholder:text-ink-muted/40 transition-all duration-200 focus:border-primary focus:bg-card focus:ring-2 focus:ring-primary/15 focus:outline-none"
           />
           <div className="mt-4 flex items-center justify-between">
             <p className="text-xs text-ink-muted">
@@ -88,17 +92,30 @@ export default function Analyze() {
             <button
               onClick={handleAnalyze}
               disabled={!jdText.trim()}
-              className="btn-shine rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-30"
+              className="btn-shine inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-30 disabled:shadow-none"
             >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                />
+              </svg>
               开始分析
             </button>
           </div>
           {!hasProfile && (
-            <div className="mt-6 rounded-xl border border-warning/30 bg-warning/5 p-4">
+            <div className="mt-5 rounded-xl border border-warning/30 bg-warning/5 px-5 py-3.5">
               <p className="text-sm text-warning">
                 <span className="font-medium">提示：</span>
                 你还没有填写个人信息，匹配度分析将基于通用标准。
-                <Link to="/create" className="ml-1 font-medium text-ink underline">
+                <Link to="/create" className="ml-1 font-semibold underline">
                   去填写信息 →
                 </Link>
               </p>
@@ -238,14 +255,27 @@ export default function Analyze() {
       {currentView === 'error' && <ErrorState message={errorMsg} onRetry={handleAnalyze} />}
 
       {currentView === 'result' && result && (
-        <div className="mt-8">
-          <div className="mb-6 flex items-center justify-between">
+        <div className="mt-8 space-y-6">
+          <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-ink">分析结果</h2>
             <button
               onClick={handleReset}
-              className="text-sm font-semibold text-primary transition hover:text-primary-dark"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-ink-muted transition hover:bg-card hover:text-ink"
             >
-              ← 重新输入
+              <svg
+                className="h-3.5 w-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182"
+                />
+              </svg>
+              重新分析
             </button>
           </div>
 

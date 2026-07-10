@@ -471,8 +471,11 @@ export default function Resume() {
   if (status === 'idle') {
     return (
       <div className="mx-auto max-w-6xl px-6 py-10">
-        <h1 className="text-2xl font-bold text-ink">AI 简历预览</h1>
-        <div className="mt-8 text-center">
+        <div className="mb-6">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">AI 简历</p>
+          <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-ink">AI 简历预览</h1>
+        </div>
+        <div className="mt-8 rounded-2xl border border-border bg-card p-12 text-center shadow-lg shadow-border/20">
           <button
             onClick={handleRetry}
             className="btn-shine rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark"

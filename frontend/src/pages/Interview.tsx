@@ -211,60 +211,66 @@ export default function Interview() {
   if (phase === 'setup') {
     return (
       <div className="mx-auto max-w-2xl px-6 py-12">
-        <h1 className="text-2xl font-extrabold tracking-tight text-ink">AI 模拟面试</h1>
-        <p className="mt-2 text-sm text-ink-muted">
-          基于你的简历内容，AI 为你生成针对性的面试题目并实时评估回答。
-        </p>
+        <div className="mb-8">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">模拟面试</p>
+          <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-ink">AI 模拟面试</h1>
+          <p className="mt-2 text-ink-muted">
+            基于你的简历内容，AI 为你生成针对性的面试题目并实时评估回答。
+          </p>
+        </div>
 
-        <div className="mt-8 space-y-6">
-          {/* Target role */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-ink">目标岗位</label>
-            <input
-              type="text"
-              value={targetRole}
-              onChange={(e) => setTargetRole(e.target.value)}
-              placeholder="例如：前端开发实习"
-              className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-ink placeholder:text-ink-muted/40 focus:border-primary focus:ring-2 focus:ring-primary/15 focus:outline-none"
-            />
-            {data.targetRole && (
-              <p className="mt-1.5 text-xs text-ink-muted">
-                已自动填入你的目标岗位：{data.targetRole}
-              </p>
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-lg shadow-border/20 sm:p-8">
+          <div className="space-y-6">
+            {/* 目标岗位 */}
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-ink">目标岗位</label>
+              <input
+                type="text"
+                value={targetRole}
+                onChange={(e) => setTargetRole(e.target.value)}
+                placeholder="例如：前端开发实习"
+                className="w-full rounded-xl border border-border bg-surface-warm/30 px-4 py-3 text-sm text-ink placeholder:text-ink-muted/40 transition-all duration-200 focus:border-primary focus:bg-card focus:ring-2 focus:ring-primary/15 focus:outline-none"
+              />
+              {data.targetRole && (
+                <p className="mt-1.5 text-xs text-ink-muted">
+                  已自动填入你的目标岗位：
+                  <span className="font-medium text-primary">{data.targetRole}</span>
+                </p>
+              )}
+            </div>
+
+            {/* 题型说明 */}
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="card-hover-lift rounded-xl border border-border bg-surface-warm/30 p-4 text-center">
+                <div className="text-2xl">💻</div>
+                <p className="mt-1 text-xs font-semibold text-ink">专业知识题</p>
+                <p className="text-[10px] text-ink-muted">考察岗位核心知识</p>
+              </div>
+              <div className="card-hover-lift rounded-xl border border-border bg-surface-warm/30 p-4 text-center">
+                <div className="text-2xl">📁</div>
+                <p className="mt-1 text-xs font-semibold text-ink">项目深挖题</p>
+                <p className="text-[10px] text-ink-muted">深挖项目细节</p>
+              </div>
+              <div className="card-hover-lift rounded-xl border border-border bg-surface-warm/30 p-4 text-center">
+                <div className="text-2xl">🤝</div>
+                <p className="mt-1 text-xs font-semibold text-ink">行为题</p>
+                <p className="text-[10px] text-ink-muted">考察软技能</p>
+              </div>
+            </div>
+
+            {errorMsg && (
+              <div className="rounded-xl border border-error/20 bg-error/5 px-4 py-2.5 text-sm text-error">
+                {errorMsg}
+              </div>
             )}
+
+            <button
+              onClick={handleStart}
+              className="btn-shine w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition hover:bg-primary-dark"
+            >
+              开始模拟面试
+            </button>
           </div>
-
-          {/* Info cards */}
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-xl border border-border bg-card p-4 text-center">
-              <div className="text-2xl">💻</div>
-              <p className="mt-1 text-xs font-medium text-ink">技术题</p>
-              <p className="text-[10px] text-ink-muted">考察技术理解深度</p>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-4 text-center">
-              <div className="text-2xl">📁</div>
-              <p className="mt-1 text-xs font-medium text-ink">项目题</p>
-              <p className="text-[10px] text-ink-muted">深挖项目细节</p>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-4 text-center">
-              <div className="text-2xl">🤝</div>
-              <p className="mt-1 text-xs font-medium text-ink">行为题</p>
-              <p className="text-[10px] text-ink-muted">考察软技能</p>
-            </div>
-          </div>
-
-          {errorMsg && (
-            <div className="rounded-lg border border-error/20 bg-error/5 px-4 py-2.5 text-sm text-error">
-              {errorMsg}
-            </div>
-          )}
-
-          <button
-            onClick={handleStart}
-            className="btn-shine w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition hover:bg-primary-dark"
-          >
-            开始模拟面试
-          </button>
         </div>
       </div>
     )

@@ -112,32 +112,36 @@ export default function Optimize() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
-      <h1 className="text-2xl font-extrabold tracking-tight text-ink">AI 简历优化</h1>
-      <p className="mt-2 text-sm text-ink-muted">
-        粘贴你的简历内容，AI 将从内容质量、技术关键词、项目表达、岗位匹配度四个维度进行分析。
-      </p>
+      {/* 页眉 */}
+      <div className="mb-8">
+        <p className="text-xs font-semibold uppercase tracking-widest text-primary">简历优化</p>
+        <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-ink">AI 简历优化</h1>
+        <p className="mt-2 text-ink-muted">
+          粘贴你的简历内容，AI 将从内容质量、技术关键词、项目表达、岗位匹配度四个维度进行分析。
+        </p>
+      </div>
 
       {currentView === 'input' && (
-        <div className="mt-8">
+        <div className="mt-8 rounded-2xl border border-border bg-card p-6 shadow-lg shadow-border/20 sm:p-8">
           {hasStoredData && resumeText === '' && (
-            <div className="mb-4 flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+            <div className="mb-5 flex items-center justify-between rounded-xl border border-primary/20 bg-primary/[0.03] px-5 py-3.5">
               <p className="text-sm text-primary/80">检测到已保存的简历数据，可以直接使用。</p>
               <button
                 onClick={handleLoadStored}
-                className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-primary-dark"
+                className="btn-shine rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-primary-dark"
               >
                 使用已保存的简历
               </button>
             </div>
           )}
 
-          <label className="block text-sm font-medium text-ink-light">简历内容</label>
+          <label className="block text-sm font-semibold text-ink">简历内容</label>
           <textarea
             value={resumeText}
             onChange={(e) => setResumeText(e.target.value)}
             rows={16}
             placeholder="粘贴你的简历内容到这里..."
-            className="mt-2 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-ink placeholder:text-ink-muted/50 transition focus:border-primary focus:ring-2 focus:ring-primary/15 focus:outline-none"
+            className="mt-2 w-full rounded-xl border border-border bg-surface-warm/30 px-4 py-3 text-sm text-ink placeholder:text-ink-muted/40 transition-all duration-200 focus:border-primary focus:bg-card focus:ring-2 focus:ring-primary/15 focus:outline-none"
           />
           <div className="mt-4 flex items-center justify-between">
             <p className="text-xs text-ink-muted">
@@ -146,8 +150,21 @@ export default function Optimize() {
             <button
               onClick={handleAnalyze}
               disabled={!resumeText.trim()}
-              className="btn-shine rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-30"
+              className="btn-shine inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-30 disabled:shadow-none"
             >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"
+                />
+              </svg>
               AI 分析
             </button>
           </div>
@@ -247,14 +264,27 @@ export default function Optimize() {
       {currentView === 'error' && <ErrorState message={errorMsg} onRetry={handleAnalyze} />}
 
       {currentView === 'result' && result && (
-        <div className="mt-8">
-          <div className="mb-6 flex items-center justify-between">
+        <div className="mt-8 space-y-6">
+          <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-ink">分析结果</h2>
             <button
               onClick={handleReset}
-              className="text-sm font-semibold text-primary transition hover:text-primary-dark"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-ink-muted transition hover:bg-card hover:text-ink"
             >
-              ← 重新输入
+              <svg
+                className="h-3.5 w-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182"
+                />
+              </svg>
+              重新分析
             </button>
           </div>
 
