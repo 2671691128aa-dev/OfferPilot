@@ -179,13 +179,17 @@ export default function CreateResume() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-12">
-      {/* 页面标题 */}
-      <div className="mb-10">
-        <p className="text-xs font-semibold uppercase tracking-widest text-primary">创建简历</p>
-        <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-ink">
-          第 {step} 步：{STEP_LABELS[step - 1]}
-        </h1>
-        <p className="mt-2 text-ink-muted">{STEP_DESCRIPTIONS[step - 1]}</p>
+      {/* 页面标题 — 带渐变装饰 */}
+      <div className="relative mb-10 overflow-hidden rounded-2xl bg-gradient-to-br from-primary/[0.06] via-card to-surface-warm/50 px-8 py-8">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary/5 blur-3xl" />
+        <div className="relative">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">创建简历</p>
+          <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-ink">
+            第 {step} 步<span className="mx-2 text-ink-muted/30">·</span>
+            {STEP_LABELS[step - 1]}
+          </h1>
+          <p className="mt-2 text-ink-muted">{STEP_DESCRIPTIONS[step - 1]}</p>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -205,7 +209,7 @@ export default function CreateResume() {
             </div>
 
             {/* 表单卡片 */}
-            <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-lg shadow-border/20 sm:p-8">
+            <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-xl shadow-border/10 ring-1 ring-black/[0.02] sm:p-8">
               {/* ─── Step 1: 基本信息 ─── */}
               {step === 1 && (
                 <div className="space-y-5">
@@ -484,7 +488,7 @@ export default function CreateResume() {
                     {(watchedValues.projects || []).map((project, index) => (
                       <div
                         key={index}
-                        className="rounded-xl border border-border bg-surface-warm/50 p-5"
+                        className="rounded-xl border border-border bg-surface-warm/30 p-5 transition-shadow hover:shadow-md"
                       >
                         <div className="mb-4 flex items-center justify-between">
                           <span className="inline-flex items-center gap-2 text-sm font-semibold text-ink">
@@ -689,7 +693,7 @@ export default function CreateResume() {
               ) : (
                 <button
                   type="submit"
-                  className="btn-shine inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition hover:bg-primary-dark sm:w-auto max-sm:w-full max-sm:justify-center"
+                  className="btn-shine inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-primary-light px-7 py-3 text-sm font-semibold text-white shadow-xl shadow-primary/25 transition hover:shadow-primary/40 sm:w-auto max-sm:w-full max-sm:justify-center"
                 >
                   <svg
                     className="h-4 w-4"
