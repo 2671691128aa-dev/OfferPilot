@@ -24,6 +24,8 @@ ${roleInfo}
 ${resumeText}
 ---
 
+请严格按以下顺序输出 JSON 字段（先输出 score，再输出 advantages，再输出 problems，最后输出 suggestions），不要改变字段顺序：
+
 请输出以下 JSON 格式（不要包含其他文字）：
 {
   "score": 简历整体评分(0-100的整数),

@@ -65,6 +65,8 @@ ${
 }`
 
   const outputFormat = `
+请严格按以下顺序输出 JSON 字段（先输出 summary，再输出 skills，再输出 projects，最后输出 advice），不要改变字段顺序：
+
 请输出以下 JSON 格式（不要包含其他文字）：
 {
   "summary": "个人简介，1-3句话，突出技术能力和目标",

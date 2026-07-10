@@ -106,6 +106,8 @@ export function buildAnswerEvalPrompt(
 候选人回答：
 ${userAnswer}
 
+请严格按以下顺序输出 JSON 字段（先输出 score，再输出 strengths，再输出 weaknesses，再输出 suggestedImprovement，最后输出 strongExample），不要改变字段顺序：
+
 请输出以下 JSON 格式（不要包含其他文字）：
 {
   "score": 评分(0-100整数),
@@ -156,6 +158,8 @@ export function buildInterviewReportPrompt(
 ${qAndA}
 
 平均得分：${avgScore}/100
+
+请严格按以下顺序输出 JSON 字段（先输出 overallScore，再输出 topStrengths，再输出 keyImprovements，再输出 practiceTopics，最后输出 summary），不要改变字段顺序：
 
 请输出以下 JSON 格式（不要包含其他文字）：
 {

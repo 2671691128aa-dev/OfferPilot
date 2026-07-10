@@ -68,6 +68,8 @@ ${
 评分薄弱环节：
 ${weaknessReasons.length > 0 ? weaknessReasons.map((r) => `- ${r}`).join('\n') : '暂无'}
 
+请严格按以下顺序输出 JSON 字段（先输出 currentLevel，再输出 levelAnalysis，再输出 skillGaps，再输出 projectSuggestions，再输出 shortTermPlan，再输出 midTermPlan，最后输出 recommendedResources），不要改变字段顺序：
+
 请输出以下 JSON 格式（不要包含其他文字）：
 {
   "currentLevel": "入门/初级/中级（根据技能数量、项目质量、评分综合判断）",

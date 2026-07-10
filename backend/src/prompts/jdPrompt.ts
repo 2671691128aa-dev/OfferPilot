@@ -25,6 +25,8 @@ ${jdText}
 
 ${skillsInfo}
 
+请严格按以下顺序输出 JSON 字段（先输出 matchScore，再输出 requiredSkills，再输出 advantages，最后输出 gaps），不要改变字段顺序：
+
 请输出以下 JSON 格式（不要包含其他文字）：
 {
   "matchScore": 匹配度百分比(0-100的整数),
