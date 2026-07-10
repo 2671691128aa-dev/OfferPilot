@@ -1,9 +1,13 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { loadResumeData, type ResumeFormData } from '../utils/storage'
 import { STREAM_ENDPOINTS, type OptimizeResult } from '../services/api'
 import { useStream } from '../hooks/useStream'
 import ErrorState from '../components/ErrorState'
+import { useProgressiveJSON } from '../hooks/useProgressiveJSON'
+import StreamProgress from '../components/StreamProgress'
+import StreamCancel from '../components/StreamCancel'
+import CountUpNumber from '../components/CountUpNumber'
 
 function buildResumeText(data: ResumeFormData): string {
   const lines: string[] = []
@@ -42,32 +46,6 @@ function buildResumeText(data: ResumeFormData): string {
   return lines.join('\n')
 }
 
-function StreamingIndicator({ rawText }: { rawText: string }) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (ref.current) ref.current.scrollTop = ref.current.scrollHeight
-  }, [rawText])
-
-  return (
-    <div className="mx-auto max-w-3xl py-8">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-3 w-3">
-          <span className="absolute inline-flex h-3 w-3 animate-ping rounded-full bg-primary opacity-75" />
-          <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
-        </div>
-        <span className="text-sm font-medium text-ink">AI 正在分析你的简历...</span>
-      </div>
-      <div
-        ref={ref}
-        className="max-h-64 overflow-y-auto rounded-xl border border-border bg-ink/[0.03] p-5 font-mono text-xs leading-relaxed text-ink-muted whitespace-pre-wrap"
-      >
-        {rawText || '连接中...'}
-        <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-primary" />
-      </div>
-    </div>
-  )
-}
-
 type ViewMode = 'input' | 'streaming' | 'error' | 'result'
 
 export default function Optimize() {
@@ -84,7 +62,26 @@ export default function Optimize() {
     rawText,
     errorMsg,
     start,
+    abort,
   } = useStream<OptimizeResult>(STREAM_ENDPOINTS.resumeOptimize)
+
+  const progressive = useProgressiveJSON<OptimizeResult>(
+    rawText,
+    {
+      score: 'number',
+      advantages: 'array',
+      problems: 'array',
+      suggestions: 'array',
+    },
+    status,
+  )
+
+  const streamSteps = [
+    { key: 'score', label: '评分' },
+    { key: 'advantages', label: '优势' },
+    { key: 'problems', label: '问题' },
+    { key: 'suggestions', label: '建议' },
+  ]
 
   // Map stream status to view mode
   const currentView: ViewMode =
@@ -157,7 +154,95 @@ export default function Optimize() {
         </div>
       )}
 
-      {currentView === 'streaming' && <StreamingIndicator rawText={rawText} />}
+      {currentView === 'streaming' && (
+        <div className="mt-8">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-ink">AI 正在分析...</h2>
+            <StreamCancel onCancel={abort} />
+          </div>
+
+          <StreamProgress
+            steps={streamSteps}
+            completedKeys={progressive.completedKeys as string[]}
+            currentKey={progressive.currentKey}
+            progress={progressive.progress}
+          />
+
+          <div className="space-y-6">
+            {/* Score — progressive */}
+            {progressive.fields.score?.value != null && (
+              <div className="animate-fade-up rounded-2xl border border-border bg-card p-6 shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-light text-3xl font-extrabold text-white shadow-lg shadow-primary/20">
+                    <CountUpNumber value={progressive.fields.score.value} />
+                  </div>
+                  <div>
+                    <p className="text-xl font-bold text-ink">
+                      {scoreLabel(progressive.fields.score.value)}
+                    </p>
+                    <p className="text-sm text-ink-muted">
+                      你的简历基础不错，以下建议可以进一步提升。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Advantages — progressive */}
+            {progressive.fields.advantages?.value &&
+              progressive.fields.advantages.value.length > 0 && (
+                <div className="animate-fade-up rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
+                    你的优势
+                  </h3>
+                  <ul className="mt-4 space-y-2">
+                    {progressive.fields.advantages.value.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-ink-light">
+                        <span className="mt-0.5 text-success">✓</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+            {/* Problems — progressive */}
+            {progressive.fields.problems?.value && progressive.fields.problems.value.length > 0 && (
+              <div className="animate-fade-up rounded-2xl border border-border bg-card p-6 shadow-sm">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
+                  发现问题
+                </h3>
+                <ul className="mt-4 space-y-3">
+                  {progressive.fields.problems.value.map((problem, i) => (
+                    <li key={i} className="flex items-start gap-3 rounded-xl bg-warning/8 p-3">
+                      <span className="mt-0.5 text-warning">●</span>
+                      <p className="text-sm text-ink-light">{problem}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Suggestions — progressive */}
+            {progressive.fields.suggestions?.value &&
+              progressive.fields.suggestions.value.length > 0 && (
+                <div className="animate-fade-up rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
+                    优化建议
+                  </h3>
+                  <ul className="mt-4 space-y-3">
+                    {progressive.fields.suggestions.value.map((suggestion, i) => (
+                      <li key={i} className="flex items-start gap-3 rounded-xl bg-success/8 p-3">
+                        <span className="mt-0.5 text-success">✓</span>
+                        <p className="text-sm text-ink-light">{suggestion}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+          </div>
+        </div>
+      )}
 
       {currentView === 'error' && <ErrorState message={errorMsg} onRetry={handleAnalyze} />}
 

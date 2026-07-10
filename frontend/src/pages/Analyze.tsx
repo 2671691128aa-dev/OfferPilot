@@ -1,35 +1,13 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { loadResumeData } from '../utils/storage'
 import { STREAM_ENDPOINTS, type AnalyzeResult } from '../services/api'
 import { useStream } from '../hooks/useStream'
+import { useProgressiveJSON } from '../hooks/useProgressiveJSON'
+import StreamProgress from '../components/StreamProgress'
+import StreamCancel from '../components/StreamCancel'
+import CountUpNumber from '../components/CountUpNumber'
 import ErrorState from '../components/ErrorState'
-
-function StreamingIndicator({ rawText }: { rawText: string }) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (ref.current) ref.current.scrollTop = ref.current.scrollHeight
-  }, [rawText])
-
-  return (
-    <div className="mx-auto max-w-3xl py-8">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-3 w-3">
-          <span className="absolute inline-flex h-3 w-3 animate-ping rounded-full bg-primary opacity-75" />
-          <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
-        </div>
-        <span className="text-sm font-medium text-ink">AI 正在分析岗位要求...</span>
-      </div>
-      <div
-        ref={ref}
-        className="max-h-64 overflow-y-auto rounded-xl border border-border bg-ink/[0.03] p-5 font-mono text-xs leading-relaxed text-ink-muted whitespace-pre-wrap"
-      >
-        {rawText || '连接中...'}
-        <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-primary" />
-      </div>
-    </div>
-  )
-}
 
 type ViewMode = 'input' | 'streaming' | 'error' | 'result'
 
@@ -46,7 +24,26 @@ export default function Analyze() {
     rawText,
     errorMsg,
     start,
+    abort,
   } = useStream<AnalyzeResult>(STREAM_ENDPOINTS.jobAnalyze)
+
+  const progressive = useProgressiveJSON<AnalyzeResult>(
+    rawText,
+    {
+      matchScore: 'number',
+      requiredSkills: 'array',
+      advantages: 'array',
+      gaps: 'array',
+    },
+    status,
+  )
+
+  const streamSteps = [
+    { key: 'matchScore', label: '匹配度分析' },
+    { key: 'requiredSkills', label: '技能要求' },
+    { key: 'advantages', label: '你的优势' },
+    { key: 'gaps', label: '能力差距' },
+  ]
 
   const currentView: ViewMode =
     status === 'streaming'
@@ -110,7 +107,133 @@ export default function Analyze() {
         </div>
       )}
 
-      {currentView === 'streaming' && <StreamingIndicator rawText={rawText} />}
+      {currentView === 'streaming' && (
+        <div className="mt-8">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-ink">AI 正在分析...</h2>
+            <StreamCancel onCancel={abort} />
+          </div>
+
+          <StreamProgress
+            steps={streamSteps}
+            completedKeys={progressive.completedKeys as string[]}
+            currentKey={progressive.currentKey}
+            progress={progressive.progress}
+          />
+
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            {/* Target role */}
+            {data.targetRole && (
+              <p className="mb-4 text-sm text-ink-muted">
+                目标岗位：<span className="font-medium text-ink">{data.targetRole}</span>
+              </p>
+            )}
+
+            {/* Match Score */}
+            {progressive.fields.matchScore?.value != null && (
+              <div className="animate-fade-up mb-6 flex items-center gap-5">
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-light text-3xl font-extrabold text-white shadow-lg shadow-primary/20">
+                  <CountUpNumber value={progressive.fields.matchScore.value} />
+                </div>
+                <div>
+                  <p className="text-xl font-bold text-ink">
+                    匹配度：
+                    {progressive.fields.matchScore.value >= 80
+                      ? '优秀'
+                      : progressive.fields.matchScore.value >= 60
+                        ? '良好'
+                        : '一般'}
+                  </p>
+                  <p className="text-sm text-ink-muted">
+                    {progressive.fields.matchScore.value >= 60
+                      ? '你已具备岗位所需的大部分技能，补充以下内容可以进一步提升竞争力。'
+                      : '你与岗位要求有一定差距，建议针对性补充技能。'}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Required Skills */}
+            {progressive.fields.requiredSkills?.value &&
+              progressive.fields.requiredSkills.value.length > 0 && (
+                <div className="animate-fade-up mb-6" style={{ animationDelay: '100ms' }}>
+                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-muted">
+                    岗位要求技能
+                  </h3>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {progressive.fields.requiredSkills.value.map((skill) => {
+                      const userHas = data.skills.some(
+                        (s) => s.toLowerCase() === skill.toLowerCase(),
+                      )
+                      return (
+                        <div
+                          key={skill}
+                          className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm ${userHas ? 'bg-success/8 text-success' : 'bg-surface-warm text-ink-muted'}`}
+                        >
+                          <span>{userHas ? '✓' : '○'}</span>
+                          {skill}
+                          {userHas && <span className="ml-auto text-xs text-success">已掌握</span>}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+            {/* Advantages */}
+            {progressive.fields.advantages?.value &&
+              progressive.fields.advantages.value.length > 0 && (
+                <div className="animate-fade-up mb-6" style={{ animationDelay: '200ms' }}>
+                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-muted">
+                    你的优势
+                  </h3>
+                  <ul className="space-y-2">
+                    {progressive.fields.advantages.value.map((a, i) => (
+                      <li
+                        key={i}
+                        className="animate-fade-up flex items-start gap-2 text-sm text-ink-light"
+                        style={{ animationDelay: `${i * 80}ms` }}
+                      >
+                        <span className="mt-0.5 text-success">✓</span>
+                        {a}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+            {/* Gaps */}
+            {progressive.fields.gaps?.value && progressive.fields.gaps.value.length > 0 && (
+              <div className="animate-fade-up" style={{ animationDelay: '300ms' }}>
+                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-muted">
+                  能力差距
+                </h3>
+                <ul className="space-y-2">
+                  {progressive.fields.gaps.value.map((g, i) => (
+                    <li
+                      key={i}
+                      className="animate-fade-up flex items-start gap-2 text-sm text-ink-light"
+                      style={{ animationDelay: `${i * 80}ms` }}
+                    >
+                      <span className="mt-0.5 text-warning">!</span>
+                      {g}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Skeleton placeholders */}
+            {!progressive.fields.matchScore?.value && !progressive.isComplete && (
+              <div>
+                <div className="mb-2 h-3 w-16 rounded bg-border/60" />
+                <div className="h-3 w-3/4 rounded bg-border/40" />
+                <div className="mt-2 h-3 w-1/2 rounded bg-border/30" />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {currentView === 'error' && <ErrorState message={errorMsg} onRetry={handleAnalyze} />}
 
