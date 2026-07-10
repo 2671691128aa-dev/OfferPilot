@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 const features = [
   {
     title: 'AI 简历生成',
-    description: '输入你的经历，AI 自动生成匹配岗位的专业简历。',
+    description: '输入你的经历，AI 自动生成匹配岗位的专业简历，流式渐进展示，零白屏等待。',
     icon: (
       <svg
         className="h-6 w-6"
@@ -20,10 +20,11 @@ const features = [
       </svg>
     ),
     accent: 'from-primary to-primary-light',
+    stats: '5 分钟生成',
   },
   {
     title: '智能优化',
-    description: 'AI 分析你的简历，给出评分、问题诊断和修改建议。',
+    description: 'AI 多维度分析简历，给出评分、问题诊断和修改建议，帮你发现隐藏的问题。',
     icon: (
       <svg
         className="h-6 w-6"
@@ -40,10 +41,11 @@ const features = [
       </svg>
     ),
     accent: 'from-accent to-accent-light',
+    stats: '4 维度评分',
   },
   {
     title: '岗位匹配',
-    description: '粘贴 JD，AI 分析岗位要求，评估你的匹配度和差距。',
+    description: '粘贴 JD，AI 提取岗位要求，评估你的匹配度和能力差距，精准定位提升方向。',
     icon: (
       <svg
         className="h-6 w-6"
@@ -59,15 +61,31 @@ const features = [
         />
       </svg>
     ),
-    accent: 'from-emerald-500 to-teal-400',
+    accent: 'from-success to-teal-400',
+    stats: '精准匹配',
   },
 ]
 
 const steps = [
-  { number: '01', title: '填写经历', description: '输入你的个人信息、技能和项目经验' },
-  { number: '02', title: 'AI 分析', description: 'AI 理解你的技能，匹配岗位关键词' },
-  { number: '03', title: '生成简历', description: '获得专业排版的岗位匹配简历' },
-  { number: '04', title: '导出使用', description: '下载 PDF，直接投递简历' },
+  {
+    number: '01',
+    title: '填写经历',
+    description: '分 5 步输入个人信息、技能和项目经验，草稿自动保存',
+  },
+  {
+    number: '02',
+    title: 'AI 分析',
+    description: 'AI 理解你的技能，匹配岗位关键词，渐进式展示结果',
+  },
+  { number: '03', title: '生成简历', description: '获得专业排版的岗位匹配简历，可直接在线编辑' },
+  { number: '04', title: '导出使用', description: '下载 PDF，直接投递简历，支持多模板切换' },
+]
+
+const highlights = [
+  { value: '6', label: '核心功能', description: '覆盖求职全流程' },
+  { value: '14', label: 'API 接口', description: 'REST + SSE 流式' },
+  { value: '53', label: '源文件', description: 'TypeScript 全覆盖' },
+  { value: '8k+', label: '代码行数', description: '精心架构设计' },
 ]
 
 export default function Home() {
@@ -82,18 +100,20 @@ export default function Home() {
 
         <div className="relative mx-auto max-w-4xl text-center">
           {/* Badge */}
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 shadow-sm">
+          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-4 py-1.5 shadow-sm backdrop-blur-sm">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
             </span>
-            <span className="text-xs font-medium text-ink-muted">AI 驱动 · 免费使用</span>
+            <span className="text-xs font-medium text-ink-muted">
+              AI 驱动 · 免费使用 · 数据本地存储
+            </span>
           </div>
 
           <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl lg:text-6xl">
             你的第一份专业简历
             <br />
-            <span className="bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary via-primary-light to-accent bg-clip-text text-transparent">
               只需 5 分钟
             </span>
           </h1>
@@ -106,7 +126,7 @@ export default function Home() {
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               to="/create"
-              className="btn-shine inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition hover:bg-primary-dark hover:shadow-primary/40"
+              className="btn-shine inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-primary-light px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition hover:shadow-primary/40"
             >
               立即生成简历
               <svg
@@ -125,7 +145,7 @@ export default function Home() {
             </Link>
             <a
               href="#features"
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-8 py-4 text-sm font-semibold text-ink transition hover:bg-surface-warm"
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/80 px-8 py-4 text-sm font-semibold text-ink backdrop-blur-sm transition hover:bg-card"
             >
               了解更多
             </a>
@@ -133,6 +153,19 @@ export default function Home() {
 
           {/* Trust signal */}
           <p className="mt-8 text-xs text-ink-muted">无需注册 · 数据安全存储在本地 · 随时可清除</p>
+        </div>
+      </section>
+
+      {/* ─── Stats ─── */}
+      <section className="border-y border-border/60 bg-card/50 px-6 py-12 backdrop-blur-sm">
+        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-6 sm:grid-cols-4">
+          {highlights.map((h) => (
+            <div key={h.label} className="text-center">
+              <div className="text-3xl font-extrabold text-primary">{h.value}</div>
+              <div className="mt-1 text-sm font-semibold text-ink">{h.label}</div>
+              <div className="mt-0.5 text-xs text-ink-muted">{h.description}</div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -151,15 +184,18 @@ export default function Home() {
             {features.map((f) => (
               <div
                 key={f.title}
-                className="feature-accent card-lift rounded-xl border border-border bg-card p-7 pl-8"
+                className="feature-accent card-hover-lift group rounded-2xl border border-border bg-card p-7 pl-8"
               >
                 <div
-                  className={`mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${f.accent} text-white`}
+                  className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${f.accent} text-white shadow-lg shadow-primary/10 transition-transform duration-200 group-hover:scale-110`}
                 >
                   {f.icon}
                 </div>
                 <h3 className="text-lg font-bold text-ink">{f.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-ink-muted">{f.description}</p>
+                <div className="mt-4 inline-flex rounded-full bg-primary/[0.06] px-3 py-1 text-xs font-medium text-primary">
+                  {f.stats}
+                </div>
               </div>
             ))}
           </div>
@@ -167,13 +203,14 @@ export default function Home() {
       </section>
 
       {/* ─── Steps ─── */}
-      <section className="bg-surface-warm px-6 py-20">
+      <section className="bg-surface-warm/60 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-semibold uppercase tracking-widest text-primary">使用流程</p>
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
               四步搞定简历
             </h2>
+            <p className="mt-4 text-ink-muted">简单几步，从空白到专业简历</p>
           </div>
 
           <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -184,11 +221,46 @@ export default function Home() {
                   index < steps.length - 1 ? 'timeline-connector' : ''
                 }`}
               >
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-light text-lg font-extrabold text-white shadow-lg shadow-primary/20">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-light text-lg font-extrabold text-white shadow-lg shadow-primary/20 transition-transform duration-200 hover:scale-110">
                   {step.number}
                 </div>
                 <h3 className="mt-5 text-base font-bold text-ink">{step.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-ink-muted">{step.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Tech Stack ─── */}
+      <section className="px-6 py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary">技术栈</p>
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
+              现代技术，精心打造
+            </h2>
+          </div>
+
+          <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {[
+              { name: 'React 19', desc: '前端框架' },
+              { name: 'TypeScript', desc: '类型安全' },
+              { name: 'Tailwind v4', desc: '样式系统' },
+              { name: 'Express', desc: '后端框架' },
+              { name: 'DeepSeek', desc: 'AI 大模型' },
+              { name: 'Vite', desc: '构建工具' },
+              { name: 'Zod', desc: '数据校验' },
+              { name: 'react-hook-form', desc: '表单管理' },
+              { name: 'SSE', desc: '流式传输' },
+              { name: 'Vercel', desc: '前端部署' },
+            ].map((tech) => (
+              <div
+                key={tech.name}
+                className="card-hover-lift rounded-xl border border-border bg-card p-4 text-center"
+              >
+                <div className="text-sm font-bold text-ink">{tech.name}</div>
+                <div className="mt-0.5 text-xs text-ink-muted">{tech.desc}</div>
               </div>
             ))}
           </div>
@@ -217,7 +289,7 @@ export default function Home() {
           </p>
           <Link
             to="/create"
-            className="btn-shine mt-10 inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition hover:bg-primary-dark"
+            className="btn-shine mt-10 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-primary-light px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition hover:shadow-primary/40"
           >
             立即开始
             <svg
