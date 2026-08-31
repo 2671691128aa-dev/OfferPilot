@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
+import { getToken } from '../services/auth'
 
 export type StreamStatus = 'idle' | 'streaming' | 'done' | 'error'
 
@@ -59,9 +60,13 @@ export function useStream<T>(url: string): UseStreamResult<T> {
       const fetchStream = async () => {
         let res: Response
         try {
+          const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+          const token = getToken()
+          if (token) headers['Authorization'] = `Bearer ${token}`
+
           res = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify(body),
             signal: controller.signal,
           })

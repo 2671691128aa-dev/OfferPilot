@@ -1,3 +1,4 @@
+import { getToken } from './auth'
 import type { ResumeFormData } from '../utils/storage'
 
 // ─── Response Types ───
@@ -57,9 +58,13 @@ export interface AnalyzeResult {
 async function apiPost<T>(url: string, body: unknown): Promise<T> {
   let res: Response
   try {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    const token = getToken()
+    if (token) headers['Authorization'] = `Bearer ${token}`
+
     res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(body),
     })
   } catch {

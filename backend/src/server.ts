@@ -1,12 +1,14 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import authRoutes from './routes/auth'
 import resumeRoutes from './routes/resume'
 import jobRoutes from './routes/job'
 import projectRoutes from './routes/project'
 import scoringRoutes from './routes/scoring'
 import careerRoutes from './routes/career'
 import interviewRoutes from './routes/interview'
+import authMiddleware from './middleware/authMiddleware'
 
 dotenv.config()
 
@@ -39,6 +41,12 @@ app.use(express.json({ limit: '100kb' }))
 app.get('/', (_req, res) => {
   res.json({ message: 'OfferPilot API running' })
 })
+
+// Auth routes (no middleware required)
+app.use('/api/auth', authRoutes)
+
+// All business routes require authentication
+app.use(authMiddleware)
 
 app.use('/api/resume', resumeRoutes)
 app.use('/api/job', jobRoutes)

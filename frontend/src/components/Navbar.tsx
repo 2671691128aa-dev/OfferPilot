@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { getUser, logout } from '../services/auth'
 
 const navLinks = [
   { path: '/', label: '首页' },
@@ -16,9 +17,11 @@ const navLinks = [
  */
 export default function Navbar() {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [hidden, setHidden] = useState(false)
   const lastScroll = useRef(0)
+  const user = getUser()
 
   useEffect(() => {
     const onScroll = () => {
@@ -89,25 +92,40 @@ export default function Navbar() {
 
         {/* CTA + Mobile toggle */}
         <div className="flex items-center gap-3">
-          <Link
-            to="/create"
-            className="btn-shine hidden rounded-lg bg-gradient-to-r from-primary to-primary-light px-4 py-2 text-sm font-semibold text-white shadow-md shadow-primary/15 transition hover:shadow-lg hover:shadow-primary/25 sm:inline-flex"
-          >
-            <svg
-              className="mr-1.5 h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
+          {user ? (
+            <div className="hidden items-center gap-3 md:flex">
+              <span className="text-sm font-medium text-ink-muted">{user.username}</span>
+              <button
+                onClick={() => {
+                  logout()
+                  navigate('/login')
+                }}
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-ink-muted transition hover:bg-black/5 hover:text-ink"
+              >
+                退出
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="btn-shine hidden rounded-lg bg-gradient-to-r from-primary to-primary-light px-4 py-2 text-sm font-semibold text-white shadow-md shadow-primary/15 transition hover:shadow-lg hover:shadow-primary/25 sm:inline-flex"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"
-              />
-            </svg>
-            开始生成
-          </Link>
+              <svg
+                className="mr-1.5 h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"
+                />
+              </svg>
+              开始生成
+            </Link>
+          )}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-muted transition hover:bg-black/5 hover:text-ink md:hidden"
@@ -163,13 +181,16 @@ export default function Navbar() {
                 </Link>
               )
             })}
-            <Link
-              to="/create"
-              onClick={() => setMobileOpen(false)}
-              className="btn-shine mt-2 rounded-lg bg-gradient-to-r from-primary to-primary-light px-4 py-2.5 text-center text-sm font-semibold text-white shadow-md"
+            <button
+              onClick={() => {
+                logout()
+                navigate('/login')
+                setMobileOpen(false)
+              }}
+              className="rounded-lg border border-border px-4 py-2.5 text-center text-sm font-medium text-ink-muted transition hover:bg-black/5 hover:text-ink"
             >
-              开始生成
-            </Link>
+              {user ? `退出 (${user.username})` : '退出'}
+            </button>
           </div>
         </div>
       )}
