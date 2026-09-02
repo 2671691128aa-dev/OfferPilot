@@ -28,8 +28,10 @@ export function isAuthenticated(): boolean {
   return !!getToken()
 }
 
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
+
 export async function login(username: string, password: string): Promise<AuthResponse> {
-  const res = await fetch('/api/auth/login', {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),
@@ -47,7 +49,7 @@ export async function login(username: string, password: string): Promise<AuthRes
 }
 
 export async function register(username: string, password: string): Promise<AuthResponse> {
-  const res = await fetch('/api/auth/register', {
+  const res = await fetch(`${API_BASE}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),

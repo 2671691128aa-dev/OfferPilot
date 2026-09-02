@@ -1,6 +1,8 @@
 import { getToken } from './auth'
 import type { ResumeFormData } from '../utils/storage'
 
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
+
 // ─── Response Types ───
 
 export interface DimensionScores {
@@ -62,7 +64,7 @@ async function apiPost<T>(url: string, body: unknown): Promise<T> {
     const token = getToken()
     if (token) headers['Authorization'] = `Bearer ${token}`
 
-    res = await fetch(url, {
+    res = await fetch(`${API_BASE}${url}`, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),
@@ -88,13 +90,13 @@ async function apiPost<T>(url: string, body: unknown): Promise<T> {
 // ─── Streaming endpoint URLs ───
 
 export const STREAM_ENDPOINTS = {
-  resumeGenerate: '/api/resume/generate/stream',
-  resumeOptimize: '/api/resume/optimize/stream',
-  jobAnalyze: '/api/job/analyze/stream',
-  projectOptimize: '/api/project/optimize/stream',
-  careerRoadmap: '/api/career/roadmap/stream',
-  interviewEvaluate: '/api/interview/evaluate/stream',
-  interviewReport: '/api/interview/report/stream',
+  resumeGenerate: `${API_BASE}/api/resume/generate/stream`,
+  resumeOptimize: `${API_BASE}/api/resume/optimize/stream`,
+  jobAnalyze: `${API_BASE}/api/job/analyze/stream`,
+  projectOptimize: `${API_BASE}/api/project/optimize/stream`,
+  careerRoadmap: `${API_BASE}/api/career/roadmap/stream`,
+  interviewEvaluate: `${API_BASE}/api/interview/evaluate/stream`,
+  interviewReport: `${API_BASE}/api/interview/report/stream`,
 } as const
 
 // ─── API Functions ───
