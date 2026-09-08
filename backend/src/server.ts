@@ -1,49 +1,15 @@
-import express from 'express'
-import cors from 'cors'
 import dotenv from 'dotenv'
-import authRoutes from './routes/auth'
-import resumeRoutes from './routes/resume'
-import resumeDataRoutes from './routes/resumeData'
-import jobRoutes from './routes/job'
-import projectRoutes from './routes/project'
-import scoringRoutes from './routes/scoring'
-import careerRoutes from './routes/career'
-import interviewRoutes from './routes/interview'
-import authMiddleware from './middleware/authMiddleware'
+import { createApp } from './app'
 
 dotenv.config()
 
-// Validate required env vars
 if (!process.env.JWT_SECRET) {
   console.error('FATAL: JWT_SECRET environment variable is required')
   process.exit(1)
 }
 
-const app = express()
+const app = createApp()
 const PORT = process.env.PORT || 3001
-
-app.use(cors({ origin: true }))
-
-// Limit JSON body size to prevent abuse
-app.use(express.json({ limit: '100kb' }))
-
-app.get('/', (_req, res) => {
-  res.json({ message: 'OfferPilot API running' })
-})
-
-// Auth routes (no middleware required)
-app.use('/api/auth', authRoutes)
-
-// All business routes require authentication
-app.use(authMiddleware)
-
-app.use('/api/resume', resumeRoutes)
-app.use('/api/resume', resumeDataRoutes)
-app.use('/api/job', jobRoutes)
-app.use('/api/project', projectRoutes)
-app.use('/api/score', scoringRoutes)
-app.use('/api/career', careerRoutes)
-app.use('/api/interview', interviewRoutes)
 
 app.listen(PORT, () => {
   console.log(`OfferPilot backend listening on port ${PORT}`)
