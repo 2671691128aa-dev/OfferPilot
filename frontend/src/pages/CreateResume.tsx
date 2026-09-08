@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { resumeFormSchema, type ResumeFormValues } from '../schemas/resumeSchema'
 import { DEFAULT_FORM_DATA } from '../types/resume'
 import { STORAGE_KEYS, removeStorageItem, saveResumeData } from '../utils/storage'
+import { saveResumeDataToServer } from '../services/resumeData'
 import { useFormPersist } from '../hooks/useFormPersist'
 import StepProgress from '../components/StepProgress'
 
@@ -128,9 +129,8 @@ export default function CreateResume() {
   }
 
   /** 最终提交：校验通过后保存数据并跳转 */
-  const onSubmit = (data: ResumeFormValues) => {
-    // 转换为兼容格式存储
-    saveResumeData({
+  const onSubmit = async (data: ResumeFormValues) => {
+    const resumeData = {
       profile: {
         name: data.profile.name,
         email: data.profile.email,
@@ -151,7 +151,12 @@ export default function CreateResume() {
         role: '',
       })),
       targetRole: data.targetRole,
-    })
+    }
+
+    // Save locally for immediate feedback
+    saveResumeData(resumeData)
+    // Sync to server (best-effort)
+    saveResumeDataToServer(resumeData).catch(() => {})
 
     // 清除草稿
     removeStorageItem(STORAGE_KEYS.FORM_DRAFT)

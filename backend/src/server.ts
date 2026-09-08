@@ -3,6 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import authRoutes from './routes/auth'
 import resumeRoutes from './routes/resume'
+import resumeDataRoutes from './routes/resumeData'
 import jobRoutes from './routes/job'
 import projectRoutes from './routes/project'
 import scoringRoutes from './routes/scoring'
@@ -11,6 +12,12 @@ import interviewRoutes from './routes/interview'
 import authMiddleware from './middleware/authMiddleware'
 
 dotenv.config()
+
+// Validate required env vars
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET environment variable is required')
+  process.exit(1)
+}
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -31,6 +38,7 @@ app.use('/api/auth', authRoutes)
 app.use(authMiddleware)
 
 app.use('/api/resume', resumeRoutes)
+app.use('/api/resume', resumeDataRoutes)
 app.use('/api/job', jobRoutes)
 app.use('/api/project', projectRoutes)
 app.use('/api/score', scoringRoutes)

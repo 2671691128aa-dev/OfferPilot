@@ -5,10 +5,16 @@ import {
   clearResumeData,
   loadVersions,
   saveVersion,
-  deleteVersion,
   type ResumeFormData,
   type ResumeVersion,
 } from '../utils/storage'
+import {
+  fetchResumeData,
+  saveResumeDataToServer,
+  fetchVersions as fetchVersionsFromServer,
+  saveVersionToServer,
+  deleteVersionFromServer,
+} from '../services/resumeData'
 import { STREAM_ENDPOINTS, type GeneratedResume } from '../services/api'
 import { useStream } from '../hooks/useStream'
 import ErrorState from '../components/ErrorState'
@@ -27,8 +33,19 @@ import ScoreBar from '../components/ScoreBar'
 
 export default function Resume() {
   const navigate = useNavigate()
-  const data: ResumeFormData = loadResumeData()
+  const [data, setData] = useState<ResumeFormData>(() => loadResumeData())
+  const [loadingData, setLoadingData] = useState(true)
   const hasProfile = data.profile.name.trim() !== ''
+
+  // Load data from server on mount
+  useEffect(() => {
+    fetchResumeData()
+      .then((serverData) => {
+        if (serverData) setData(serverData)
+        setLoadingData(false)
+      })
+      .catch(() => setLoadingData(false))
+  }, [])
 
   const {
     status,
@@ -60,11 +77,20 @@ export default function Resume() {
 
   // Editable AI content state
   const [editedResult, setEditedResult] = useState<GeneratedResume | null>(null)
-  const [versions, setVersions] = useState<ResumeVersion[]>(loadVersions)
+  const [versions, setVersions] = useState<ResumeVersion[]>(() => loadVersions())
   const [activeVersionId, setActiveVersionId] = useState<string | null>(null)
   const [editDirty, setEditDirty] = useState(false)
   const [saveFlash, setSaveFlash] = useState(false)
   const [showBreakdown, setShowBreakdown] = useState(false)
+
+  // Load versions from server on mount
+  useEffect(() => {
+    fetchVersionsFromServer()
+      .then((serverVersions) => {
+        if (serverVersions.length > 0) setVersions(serverVersions)
+      })
+      .catch(() => {})
+  }, [])
 
   // Current displayed result
   const displayResult = editedResult ?? aiResult
@@ -72,9 +98,12 @@ export default function Resume() {
   // When AI finishes, save as first version
   useEffect(() => {
     if (status === 'done' && aiResult && !editedResult) {
-      const v = saveVersion({ label: 'AI 生成 v1', data: aiResult })
-      setActiveVersionId(v.id)
-      setVersions(loadVersions())
+      // Save locally for immediate feedback
+      const localVersion = saveVersion({ label: 'AI 生成 v1', data: aiResult })
+      setActiveVersionId(localVersion.id)
+      setVersions((prev) => [localVersion, ...prev])
+      // Sync to server
+      saveVersionToServer('AI 生成 v1', aiResult).catch(() => {})
     }
   }, [status, aiResult, editedResult])
 
@@ -99,9 +128,17 @@ export default function Resume() {
 
   const handleRetry = startGeneration
 
-  const handleClearData = () => {
+  const handleClearData = async () => {
     if (window.confirm('确定要清除所有简历数据吗？此操作不可恢复。')) {
       clearResumeData()
+      // Best-effort server clear
+      await saveResumeDataToServer({
+        profile: { name: '', email: '', location: '' },
+        education: { school: '', major: '', degree: '', startDate: '', endDate: '' },
+        skills: [],
+        projects: [],
+        targetRole: '',
+      }).catch(() => {})
       navigate('/create')
     }
   }
@@ -133,15 +170,17 @@ export default function Resume() {
   const handleSaveVersion = () => {
     if (!displayResult) return
     const versionNum = versions.length + 1
-    const v = saveVersion({
+    const localVersion = saveVersion({
       label: editDirty ? `手动编辑 v${versionNum}` : `AI 生成 v${versionNum}`,
       data: displayResult,
     })
-    setActiveVersionId(v.id)
-    setVersions(loadVersions())
+    setActiveVersionId(localVersion.id)
+    setVersions((prev) => [localVersion, ...prev])
     setEditDirty(false)
     setSaveFlash(true)
     setTimeout(() => setSaveFlash(false), 2000)
+    // Sync to server
+    saveVersionToServer(localVersion.label, displayResult).catch(() => {})
   }
 
   const handleSelectVersion = (v: ResumeVersion) => {
@@ -151,9 +190,13 @@ export default function Resume() {
   }
 
   const handleDeleteVersion = (id: string) => {
-    deleteVersion(id)
-    setVersions(loadVersions())
+    // Delete locally
+    const filtered = loadVersions().filter((v) => v.id !== id)
+    localStorage.setItem('offerpilot_versions', JSON.stringify(filtered))
+    setVersions(filtered)
     if (id === activeVersionId) setActiveVersionId(null)
+    // Sync to server
+    deleteVersionFromServer(id).catch(() => {})
   }
 
   const handleRemoveSkill = (skill: string) => {
@@ -161,6 +204,19 @@ export default function Resume() {
   }
 
   // ─── Render states ───
+
+  // ─── Render ───
+
+  if (loadingData) {
+    return (
+      <div className="mx-auto flex max-w-6xl items-center justify-center px-6 py-20">
+        <div className="text-center">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+          <p className="mt-4 text-sm text-ink-muted">加载简历数据...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!hasProfile) {
     return (
