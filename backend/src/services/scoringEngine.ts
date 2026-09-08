@@ -4,7 +4,7 @@
  * No AI calls involved.
  */
 
-import { getSkillWeight, getAllSkillNames, frontendTaxonomy } from '../data/frontendTaxonomy'
+import { getSkillWeight, getAllSkillNames, findDirection } from '../data/skillTaxonomy'
 
 // ─── Types ───
 
@@ -254,7 +254,7 @@ function scoreKeywordDensity(input: ScoringInput): DimensionScore {
   ].join(' ')
   const lowerText = allText.toLowerCase()
 
-  const allSkills = getAllSkillNames()
+  const allSkills = getAllSkillNames(input.targetRole)
   let matchedCount = 0
 
   for (const skill of allSkills) {
