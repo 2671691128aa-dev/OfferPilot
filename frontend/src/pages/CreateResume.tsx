@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { resumeFormSchema, type ResumeFormValues } from '../schemas/resumeSchema'
 import { DEFAULT_FORM_DATA } from '../types/resume'
-import { STORAGE_KEYS, removeStorageItem, saveResumeData } from '../utils/storage'
-import { saveResumeDataToServer } from '../services/resumeData'
+import { STORAGE_KEYS, removeStorageItem, saveResumeData, loadResumeData } from '../utils/storage'
+import { saveResumeDataToServer, fetchResumeData } from '../services/resumeData'
 import { useFormPersist } from '../hooks/useFormPersist'
 import StepProgress from '../components/StepProgress'
 
@@ -71,6 +71,65 @@ export default function CreateResume() {
 
   /** 防抖持久化：500ms 后写入 LocalStorage */
   useFormPersist(watchedValues, setValue, STORAGE_KEYS.FORM_DRAFT)
+
+  // Load data from server on mount
+  useEffect(() => {
+    fetchResumeData()
+      .then((serverData) => {
+        if (serverData && serverData.profile?.name) {
+          setValue('profile', {
+            name: serverData.profile.name,
+            email: serverData.profile.email,
+            location: serverData.profile.location || '',
+          })
+          if (serverData.education?.school) {
+            setValue('education', {
+              school: serverData.education.school,
+              major: serverData.education.major || '',
+              degree: serverData.education.degree || '',
+              startDate: serverData.education.startDate || '',
+              endDate: serverData.education.endDate || '',
+            })
+          }
+          if (serverData.skills?.length) {
+            setValue('skills', serverData.skills)
+          }
+          if (serverData.projects?.length) {
+            setValue(
+              'projects',
+              serverData.projects.map(
+                (p: { name: string; description: string; technology?: string; role?: string }) => ({
+                  name: p.name,
+                  description: p.description || '',
+                  technology: p.technology || '',
+                }),
+              ),
+            )
+          }
+          if (serverData.targetRole) {
+            setValue('targetRole', serverData.targetRole)
+          }
+        }
+      })
+      .catch(() => {
+        // Fallback to localStorage
+        const localData = loadResumeData()
+        if (localData.profile.name) {
+          setValue('profile', localData.profile)
+          setValue('education', localData.education)
+          setValue('skills', localData.skills)
+          setValue(
+            'projects',
+            localData.projects.map((p) => ({
+              name: p.name,
+              description: p.description,
+              technology: p.technology,
+            })),
+          )
+          setValue('targetRole', localData.targetRole)
+        }
+      })
+  }, [setValue])
 
   /** 输入框样式：有错误时显示红色边框 */
   const inputClass = (fieldPath: string) =>
