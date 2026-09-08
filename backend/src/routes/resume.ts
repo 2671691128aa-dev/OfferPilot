@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express'
-import { generateResume, optimizeResume, streamAI } from '../services/aiService'
+import { generateResumeWithTools, optimizeResume, streamAI } from '../services/aiService'
 import { buildResumePrompt } from '../prompts/resumePrompt'
 import { buildOptimizePrompt } from '../prompts/optimizePrompt'
 import { scoreResume } from '../services/scoringEngine'
@@ -24,10 +24,20 @@ router.post('/generate', async (req: Request, res: Response) => {
       projects: projects || [],
       targetRole: targetRole || '',
     })
-    const result = await generateResume(system, user)
+
+    const scoringInput = {
+      resumeText: '',
+      projects: projects || [],
+      skills: skills || [],
+      targetRole: targetRole || '',
+      hasEmail: !!(email && email.trim()),
+      hasEducation: !!(education && education.school),
+    }
+
+    const result = await generateResumeWithTools(system, user, scoringInput)
     const data = JSON.parse(result)
 
-    // Apply rule-based scoring instead of AI-generated scores
+    // Apply rule-based scoring
     const resumeText = [
       data.summary || '',
       ...(projects || []).map(

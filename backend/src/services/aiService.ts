@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+import { scoreResume, type ScoringInput } from './scoringEngine.js'
 
 const MODEL = 'deepseek-chat'
 const MAX_RETRIES = 2
@@ -146,6 +147,96 @@ export async function* streamAI(
       yield delta
     }
   }
+}
+
+// ─── Function Calling: AI generates resume, then self-corrects via scoring ───
+
+export async function generateResumeWithTools(
+  systemPrompt: string,
+  userPrompt: string,
+  scoringInput: {
+    resumeText: string
+    projects: Array<{ name: string; description: string; technology: string; role: string }>
+    skills: string[]
+    targetRole: string
+    summary?: string
+    hasEmail?: boolean
+    hasEducation?: boolean
+  },
+): Promise<string> {
+  if (!process.env.AI_API_KEY) {
+    throw new Error('AI_API_KEY 未配置，请在 backend/.env 中填入 DeepSeek API Key')
+  }
+
+  const client = getClient()
+
+  // Step 1: Generate initial draft
+  const draftCompletion = await client.chat.completions.create({
+    model: MODEL,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+    temperature: 0.7,
+    response_format: { type: 'json_object' },
+  })
+
+  const draftContent = draftCompletion.choices[0]?.message?.content
+  if (!draftContent) {
+    throw new Error('AI 返回内容为空')
+  }
+
+  const draftJSON = extractJSON(draftContent)
+  const draftData = JSON.parse(draftJSON)
+
+  // Step 2: Score the draft
+  const updatedInput: ScoringInput = {
+    ...scoringInput,
+    summary: draftData.summary || scoringInput.summary || '',
+  }
+  const scoreResult = scoreResume(updatedInput)
+
+  // Step 3: If score is already good enough, return draft directly
+  if (scoreResult.overallScore >= 75) {
+    return draftJSON
+  }
+
+  // Step 4: Ask AI to improve based on scoring feedback
+  const weakDimensions = Object.entries(scoreResult.breakdown)
+    .filter(([, dim]) => dim.score < 60)
+    .map(([key, dim]) => `${key}: ${dim.reasons.join('；')}`)
+    .join('\n')
+
+  const improvementPrompt = `你的简历草稿评分为 ${scoreResult.overallScore}/100，以下是薄弱环节：
+
+${weakDimensions}
+
+请根据以上反馈优化简历内容，特别是针对薄弱环节进行改进。
+注意：不要虚构用户没有提供的经历，只优化表达方式和内容组织。
+
+请输出优化后的 JSON：
+${JSON.stringify({ summary: '', skills: [], projects: [], advice: [] })}
+
+确保输出有效 JSON。`
+
+  const improvementCompletion = await client.chat.completions.create({
+    model: MODEL,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+      { role: 'assistant', content: draftContent },
+      { role: 'user', content: improvementPrompt },
+    ],
+    temperature: 0.5,
+    response_format: { type: 'json_object' },
+  })
+
+  const improvedContent = improvementCompletion.choices[0]?.message?.content
+  if (!improvedContent) {
+    return draftJSON
+  }
+
+  return extractJSON(improvedContent)
 }
 
 // ─── Non-streaming exports (kept for backward compatibility) ───
