@@ -414,8 +414,7 @@ export default function CreateResume() {
                       </label>
                       <input
                         id="education.startDate"
-                        type="text"
-                        placeholder="2022-09"
+                        type="month"
                         className={inputNormal}
                         {...register('education.startDate')}
                       />
@@ -429,8 +428,7 @@ export default function CreateResume() {
                       </label>
                       <input
                         id="education.endDate"
-                        type="text"
-                        placeholder="2026-06"
+                        type="month"
                         className={inputNormal}
                         {...register('education.endDate')}
                       />
